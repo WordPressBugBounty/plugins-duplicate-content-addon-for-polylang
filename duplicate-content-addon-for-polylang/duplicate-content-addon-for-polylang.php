@@ -2,7 +2,7 @@
 /*
 Plugin Name: Duplicate Content Addon For Polylang
 Plugin URI: https://coolplugins.net/
-Version: 1.2.2
+Version: 1.2.3
 Author: Cool Plugins
 Author URI: https://coolplugins.net/
 Description: Duplicate content addon for Polylang to copy content from one language post to other language post for easy and quick translation.
@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 if ( ! defined( 'DUPCAP_VERSION' ) ) {
-	define( 'DUPCAP_VERSION', '1.2.2' );
+	define( 'DUPCAP_VERSION', '1.2.3' );
 }
 if ( ! defined( 'DUPCAP_DIR_PATH' ) ) {
 	define( 'DUPCAP_DIR_PATH', plugin_dir_path( __FILE__ ) );
@@ -60,6 +60,11 @@ if ( ! class_exists( 'duplicateContentAddon' ) ) {
 			add_action( 'admin_init', array( $this, 'admin_notice' ) );
 			register_activation_hook( DUPCAP_FILE, array( 'duplicateContentAddon', 'dupcap_activate' ) );
 			register_deactivation_hook( DUPCAP_FILE, array( 'duplicateContentAddon', 'dupcap_deactivate' ) );
+			add_action('init', array($this, 'dupcap_load_plugin_textdomain'));
+		}
+
+		function dupcap_load_plugin_textdomain() {
+			load_plugin_textdomain( 'dupcap', false, basename( dirname( __FILE__ ) ) . '/languages/' );
 		}
 
 		function dupcap_includes() {
@@ -82,7 +87,6 @@ if ( ! class_exists( 'duplicateContentAddon' ) ) {
 			} else {
 				add_action( 'admin_notices', array( self::$instance, 'dupcap_plugin_required_admin_notice' ) );
 			}
-			load_plugin_textdomain( 'dupcap', false, basename( dirname( __FILE__ ) ) . '/languages/' );
 		}
 
 		function admin_notice() {

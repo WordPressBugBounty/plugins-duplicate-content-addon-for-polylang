@@ -1,6 +1,6 @@
 
 (function ($) {
-    jQuery(document).on('click', '.is-dismissible button.notice-dismiss', (event) => {
+    jQuery(document).on('click', '.is-dismissible', (event) => {
       const data = jQuery(event.target).closest('.is-dismissible');
       const nonce = data.data('nonce');
       const url = data.data('url');
