@@ -2,9 +2,9 @@
 Contributors:coolplugins, khushwantsidhu,narinder-singh,satindersingh
 Tags:polylang,duplicate page,Automatic Translation,ai translation,Content duplication
 Requires at least:5.0
-Tested up to:6.7
+Tested up to:6.8
 Requires PHP:7.2
-Stable tag:1.2.3
+Stable tag:1.2.4
 Author URI:https://profiles.wordpress.org/khushwantsidhu/
 License:GPLv2 or later
 License URI:http://www.gnu.org/licenses/gpl-2.0.html
@@ -19,13 +19,13 @@ This addon enables you to <strong>replicate page/post titles, content, images, g
 
 == Check out our Automatic Translations For Polylang ==
 
- Automate your translation workflow by 90% with  **[Automatic Translations For Polylang](https://wordpress.org/plugins/automatic-translations-for-polylang/)**. 
+ Automate your translation workflow by 90% with  **[Automatic Translations For Polylang](https://coolplugins.short.gy/ai-translation-for-polylang)**. 
 
 This powerful addon effortlessly copies your original or default language post content and translates it into other languages, simplifying and speeding up the entire translation process.
 
 https://youtu.be/ecHsOyIL_J4
 
-**[Check It Now ](https://wordpress.org/plugins/automatic-translations-for-polylang/)**
+**[Check It Now ](https://coolplugins.short.gy/ai-translation-for-polylang)**
 
 == Key Features ==
 
@@ -65,7 +65,7 @@ https://www.youtube.com/watch?v=yamFwNRWEbc
 
 - **Easy to Use:** Designed with a user-friendly interface, making it accessible even for those with limited technical knowledge.
 
-**[Check It Now ](https://wordpress.org/plugins/automatic-translations-for-polylang/)**
+**[Check It Now ](https://coolplugins.short.gy/ai-translation-for-polylang)**
 
 
 > This plugin is not developed by or affiliated with the "**Polylang developers**". It is a third-party addon that provides duplicate content functionality to quickly translate your post with the same styles into other languages.
@@ -100,7 +100,7 @@ Absolutely! The plugin ensures that all styles, layouts, and formatting are pres
 No, this plugin is not developed or affiliated with the official Polylang developers. It is a third-party addon designed to enhance the Polylang experience by providing duplicate content functionality.
 
 = Does the plugin work with other translation addons? =
-Yes, it works seamlessly with **[Automatic Translations For Polylang](https://wordpress.org/plugins/automatic-translations-for-polylang/)** to further automate and simplify your translation workflow.  
+Yes, it works seamlessly with **[Automatic Translations For Polylang](https://coolplugins.short.gy/ai-translation-for-polylang)** to further automate and simplify your translation workflow.  
 
 = Can I duplicate custom post types and custom fields? =
 Yes, the plugin supports duplicating custom post types, custom fields, and all associated meta fields.
@@ -109,7 +109,7 @@ Yes, the plugin supports duplicating custom post types, custom fields, and all a
 Install the addon on your WordPress site, configure the settings, and use the one-click duplication feature to replicate your original language content into other languages.  
 
 = Where can I learn more about this plugin? =
-You can check out the plugin in action by watching the [demo video](https://youtu.be/ecHsOyIL_J4) or visiting the [plugin page](https://wordpress.org/plugins/automatic-translations-for-polylang/).  
+You can check out the plugin in action by watching the [demo video](https://youtu.be/ecHsOyIL_J4) or visiting the [plugin page](https://coolplugins.short.gy/ai-translation-for-polylang).  
 = What does the "AI Automatic Translations For Polylang" plugin do? =  
 This plugin automatically copies and translates your posts, including titles, content, images, galleries, and meta fields, from one language to another using the Yandex Translate API. It works specifically with Gutenberg blocks, replicating the original content and styles across different languages.
 
@@ -142,6 +142,11 @@ You can report security bugs through the Patchstack Vulnerability Disclosure Pro
 
 
 == Changelog ==
+<strong>Version 1.2.4 | 02 May 2025</strong>
+<pre>
+Tested Upto:WordPress version 6.8 and Polylang version 3.7
+Tweaks: Minor changes in code.
+</pre>
 <strong>Version 1.2.3 | 25 Dec 2024</strong>
 <pre>
 Fixed: load_plugin_textdomain() function issue.

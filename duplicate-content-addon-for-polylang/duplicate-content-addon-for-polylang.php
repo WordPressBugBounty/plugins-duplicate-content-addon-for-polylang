@@ -2,7 +2,7 @@
 /*
 Plugin Name: Duplicate Content Addon For Polylang
 Plugin URI: https://coolplugins.net/
-Version: 1.2.3
+Version: 1.2.4
 Author: Cool Plugins
 Author URI: https://coolplugins.net/
 Description: Duplicate content addon for Polylang to copy content from one language post to other language post for easy and quick translation.
@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 if ( ! defined( 'DUPCAP_VERSION' ) ) {
-	define( 'DUPCAP_VERSION', '1.2.3' );
+	define( 'DUPCAP_VERSION', '1.2.4' );
 }
 if ( ! defined( 'DUPCAP_DIR_PATH' ) ) {
 	define( 'DUPCAP_DIR_PATH', plugin_dir_path( __FILE__ ) );
@@ -288,7 +288,7 @@ if ( ! class_exists( 'duplicateContentAddon' ) ) {
 					echo $original_lang;
 					?>
 						" readonly/><br><br>
-		<a class="button button-primary" href="<?php echo esc_url( 'https://wordpress.org/plugins/automatic-translations-for-polylang/' ); ?>" target="_blank">Automatic Translate</a>
+		<a class="button button-primary" href="<?php echo esc_url( 'https://coolplugins.short.gy/ai-translation-for-polylang' ); ?>" target="_blank">Automatic Translate</a>
 			<?php
 		}
 
