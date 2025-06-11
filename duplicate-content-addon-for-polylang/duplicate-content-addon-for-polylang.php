@@ -2,20 +2,20 @@
 /*
 Plugin Name: Duplicate Content Addon For Polylang
 Plugin URI: https://coolplugins.net/
-Version: 1.2.4
+Version: 1.2.5
 Author: Cool Plugins
 Author URI: https://coolplugins.net/
 Description: Duplicate content addon for Polylang to copy content from one language post to other language post for easy and quick translation.
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
-Text Domain: dupcap
+Text Domain: duplicate-content-addon-for-polylang
 */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 if ( ! defined( 'DUPCAP_VERSION' ) ) {
-	define( 'DUPCAP_VERSION', '1.2.4' );
+	define( 'DUPCAP_VERSION', '1.2.5' );
 }
 if ( ! defined( 'DUPCAP_DIR_PATH' ) ) {
 	define( 'DUPCAP_DIR_PATH', plugin_dir_path( __FILE__ ) );
@@ -64,7 +64,7 @@ if ( ! class_exists( 'duplicateContentAddon' ) ) {
 		}
 
 		function dupcap_load_plugin_textdomain() {
-			load_plugin_textdomain( 'dupcap', false, basename( dirname( __FILE__ ) ) . '/languages/' );
+			load_plugin_textdomain( 'duplicate-content-addon-for-polylang', false, basename( dirname( __FILE__ ) ) . '/languages/' );
 		}
 
 		function dupcap_includes() {
@@ -107,7 +107,7 @@ if ( ! class_exists( 'duplicateContentAddon' ) ) {
 				sprintf(
 					__(
 						'In order to use <strong>%1$s</strong> plugin, please install and activate the latest version  of <a href="%2$s" class="thickbox" title="%3$s">%4$s</a>',
-						'dupcap'
+						'duplicate-content-addon-for-polylang'
 					),
 					$plugin_info['Name'],
 					esc_url( $url ),
@@ -141,7 +141,7 @@ if ( ! class_exists( 'duplicateContentAddon' ) ) {
 				if ( ! PLL()->model->is_translated_post_type( $post->post_type ) ) {
 					return;
 				}
-				add_meta_box( 'my-meta-box-id', __( 'Duplicate Content from Original Post', 'dupcap' ), array( $this, 'dupcap_shortcode_text' ), null, 'side', 'high' );
+				add_meta_box( 'my-meta-box-id', __( 'Duplicate Content from Original Post', 'duplicate-content-addon-for-polylang' ), array( $this, 'dupcap_shortcode_text' ), null, 'side', 'high' );
 			}
 
 		}
@@ -152,128 +152,128 @@ if ( ! class_exists( 'duplicateContentAddon' ) ) {
 			$lang_code    = get_bloginfo( 'language' );
 
 			$lang_array = array(
-				'en-US'          => __( 'English (United States)', 'dupcap' ),
-				'af'             => __( 'Afrikaans', 'dupcap' ),
-				'ar'             => __( 'العربية', 'dupcap' ),
-				'ary'            => __( 'العربية المغربية', 'dupcap' ),
-				'as'             => __( 'অসমীয়া', 'dupcap' ),
-				'az'             => __( 'Azərbaycan dili', 'dupcap' ),
-				'azb'            => __( 'گؤنئی آذربایجان', 'dupcap' ),
-				'bel'            => __( 'Беларуская мова', 'dupcap' ),
-				'bg-BG'          => __( 'Български', 'dupcap' ),
-				'bn-BD'          => __( 'বাংলা', 'dupcap' ),
-				'bo'             => __( 'བོད་ཡིག', 'dupcap' ),
-				'bs-BA'          => __( 'Bosanski', 'dupcap' ),
-				'ca'             => __( 'Català', 'dupcap' ),
-				'ceb'            => __( 'Cebuano', 'dupcap' ),
-				'cs-CZ'          => __( 'Čeština', 'dupcap' ),
-				'cy'             => __( 'Cymraeg', 'dupcap' ),
-				'da-DK'          => __( 'Dansk', 'dupcap' ),
-				'de-CH-informal' => __( 'Deutsch (Schweiz, Du)', 'dupcap' ),
-				'de-AT'          => __( 'Deutsch (Österreich)', 'dupcap' ),
-				'de-CH'          => __( 'Deutsch (Schweiz)', 'dupcap' ),
-				'de-DE-formal'   => __( 'Deutsch (Sie)', 'dupcap' ),
-				'de-DE'          => __( 'Deutsch', 'dupcap' ),
-				'dzo'            => __( 'རྫོང་ཁ', 'dupcap' ),
-				'el'             => __( 'Ελληνικά', 'dupcap' ),
-				'en-GB'          => __( 'English (UK)', 'dupcap' ),
-				'en-AU'          => __( 'English (Australia)', 'dupcap' ),
-				'en-CA'          => __( 'English (Canada)', 'dupcap' ),
-				'en-ZA'          => __( 'English (South Africa)', 'dupcap' ),
-				'en-NZ'          => __( 'English (New Zealand)', 'dupcap' ),
-				'eo'             => __( 'Esperanto', 'dupcap' ),
-				'es-AR'          => __( 'Español de Argentina', 'dupcap' ),
-				'es-MX'          => __( 'Español de México', 'dupcap' ),
-				'es-VE'          => __( 'Español de Venezuela', 'dupcap' ),
-				'es-ES'          => __( 'Español', 'dupcap' ),
-				'es-CO'          => __( 'Español de Colombia', 'dupcap' ),
-				'es-UY'          => __( 'Español de Uruguay', 'dupcap' ),
-				'es-CR'          => __( 'Español de Costa Rica', 'dupcap' ),
-				'es-CL'          => __( 'Español de Chile', 'dupcap' ),
-				'es-GT'          => __( 'Español de Guatemala', 'dupcap' ),
-				'es-PE'          => __( 'Español de Perú', 'dupcap' ),
-				'et'             => __( 'Eesti', 'dupcap' ),
-				'eu'             => __( 'Euskara', 'dupcap' ),
-				'fa-IR'          => __( 'فارسی', 'dupcap' ),
-				'fi'             => __( 'Suomi', 'dupcap' ),
-				'fr-CA'          => __( 'Français du Canada', 'dupcap' ),
-				'fr-FR'          => __( 'Français', 'dupcap' ),
-				'fr-BE'          => __( 'Français de Belgique', 'dupcap' ),
-				'fur'            => __( 'Friulian', 'dupcap' ),
-				'gd'             => __( 'Gàidhlig', 'dupcap' ),
-				'gl-ES'          => __( 'Galego', 'dupcap' ),
-				'gu'             => __( 'ગુજરાતી', 'dupcap' ),
-				'haz'            => __( 'هزاره گی', 'dupcap' ),
-				'he-IL'          => __( 'עִבְרִית', 'dupcap' ),
-				'hi-IN'          => __( 'हिन्दी', 'dupcap' ),
-				'hr'             => __( 'Hrvatski', 'dupcap' ),
-				'hsb'            => __( 'Hornjoserbšćina', 'dupcap' ),
-				'hu-HU'          => __( 'Magyar', 'dupcap' ),
-				'hy'             => __( 'Հայերեն', 'dupcap' ),
-				'id-ID'          => __( 'Bahasa Indonesia', 'dupcap' ),
-				'is-IS'          => __( 'Íslenska', 'dupcap' ),
-				'it-IT'          => __( 'Italiano', 'dupcap' ),
-				'ja'             => __( '日本語', 'dupcap' ),
-				'jv-ID'          => __( 'Basa Jawa', 'dupcap' ),
-				'ka-GE'          => __( 'ქართული', 'dupcap' ),
-				'kab'            => __( 'Taqbaylit', 'dupcap' ),
-				'kk'             => __( 'Қазақ тілі', 'dupcap' ),
-				'km'             => __( 'ភាសាខ្មែរ', 'dupcap' ),
-				'kn'             => __( 'ಕನ್ನಡ', 'dupcap' ),
-				'ko-KR'          => __( '한국어', 'dupcap' ),
-				'ckb'            => __( 'كوردی&lrm', 'dupcap' ),
-				'lo'             => __( 'ພາສາລາວ', 'dupcap' ),
-				'lt-LT'          => __( 'Lietuvių kalba', 'dupcap' ),
-				'lv'             => __( 'Latviešu valoda', 'dupcap' ),
-				'mk-MK'          => __( 'Македонски јазик', 'dupcap' ),
-				'ml-IN'          => __( 'മലയാളം', 'dupcap' ),
-				'mn'             => __( 'Монгол', 'dupcap' ),
-				'mr'             => __( 'मराठी', 'dupcap' ),
-				'ms-MY'          => __( 'Bahasa Melayu', 'dupcap' ),
-				'my-MM'          => __( 'ဗမာစာ', 'dupcap' ),
-				'nb-NO'          => __( 'Norsk bokmål', 'dupcap' ),
-				'ne-NP'          => __( 'नेपाली', 'dupcap' ),
-				'nl-NL'          => __( 'Nederlands', 'dupcap' ),
-				'nl-NL-formal'   => __( 'Nederlands (Formeel)', 'dupcap' ),
-				'nl-BE'          => __( 'Nederlands (België)', 'dupcap' ),
-				'nn-NO'          => __( 'Norsk nynorsk', 'dupcap' ),
-				'oci'            => __( 'Occitan', 'dupcap' ),
-				'pa-IN'          => __( 'ਪੰਜਾਬੀ', 'dupcap' ),
-				'pl-PL'          => __( 'Polski', 'dupcap' ),
-				'ps'             => __( 'پښتو', 'dupcap' ),
-				'pt-PT-ao90'     => __( 'Português (AO90)', 'dupcap' ),
-				'pt-AO'          => __( 'Português de Angola', 'dupcap' ),
-				'pt-BR'          => __( 'Português do Brasil', 'dupcap' ),
-				'pt-PT'          => __( 'Português', 'dupcap' ),
-				'rhg'            => __( 'Ruáinga', 'dupcap' ),
-				'ro-RO'          => __( 'Română', 'dupcap' ),
-				'ru-RU'          => __( 'Русский', 'dupcap' ),
-				'sah'            => __( 'Сахалыы', 'dupcap' ),
-				'snd'            => __( 'سنڌي', 'dupcap' ),
-				'si-LK'          => __( 'සිංහල', 'dupcap' ),
-				'sk-SK'          => __( 'Slovenčina', 'dupcap' ),
-				'skr'            => __( 'سرائیکی', 'dupcap' ),
-				'sl-SI'          => __( 'Slovenščina', 'dupcap' ),
-				'sq'             => __( 'Shqip', 'dupcap' ),
-				'sr-RS'          => __( 'Српски језик', 'dupcap' ),
-				'sv-SE'          => __( 'Svenska', 'dupcap' ),
-				'sw'             => __( 'Kiswahili', 'dupcap' ),
-				'szl'            => __( 'Ślōnskŏ gŏdka', 'dupcap' ),
-				'ta-IN'          => __( 'தமிழ்', 'dupcap' ),
-				'te'             => __( 'తెలుగు', 'dupcap' ),
-				'th'             => __( 'ไทย', 'dupcap' ),
-				'tl'             => __( 'Tagalog', 'dupcap' ),
-				'tr-TR'          => __( 'Türkçe', 'dupcap' ),
-				'tt-RU'          => __( 'Татар теле', 'dupcap' ),
-				'tah'            => __( 'Reo Tahiti', 'dupcap' ),
-				'ug-CN'          => __( 'ئۇيغۇرچە', 'dupcap' ),
-				'uk'             => __( 'Українська', 'dupcap' ),
-				'ur'             => __( 'اردو', 'dupcap' ),
-				'uz-UZ'          => __( 'O‘zbekcha', 'dupcap' ),
-				'vi'             => __( 'Tiếng Việt', 'dupcap' ),
-				'zh-CN'          => __( '简体中文', 'dupcap' ),
-				'zh-TW'          => __( '繁體中文', 'dupcap' ),
-				'zh-HK'          => __( '香港中文版', 'dupcap' ),
+				'en-US'          => __( 'English (United States)', 'duplicate-content-addon-for-polylang' ),
+				'af'             => __( 'Afrikaans', 'duplicate-content-addon-for-polylang' ),
+				'ar'             => __( 'العربية', 'duplicate-content-addon-for-polylang' ),
+				'ary'            => __( 'العربية المغربية', 'duplicate-content-addon-for-polylang' ),
+				'as'             => __( 'অসমীয়া', 'duplicate-content-addon-for-polylang' ),
+				'az'             => __( 'Azərbaycan dili', 'duplicate-content-addon-for-polylang' ),
+				'azb'            => __( 'گؤنئی آذربایجان', 'duplicate-content-addon-for-polylang' ),
+				'bel'            => __( 'Беларуская мова', 'duplicate-content-addon-for-polylang' ),
+				'bg-BG'          => __( 'Български', 'duplicate-content-addon-for-polylang' ),
+				'bn-BD'          => __( 'বাংলা', 'duplicate-content-addon-for-polylang' ),
+				'bo'             => __( 'བོད་ཡིག', 'duplicate-content-addon-for-polylang' ),
+				'bs-BA'          => __( 'Bosanski', 'duplicate-content-addon-for-polylang' ),
+				'ca'             => __( 'Català', 'duplicate-content-addon-for-polylang' ),
+				'ceb'            => __( 'Cebuano', 'duplicate-content-addon-for-polylang' ),
+				'cs-CZ'          => __( 'Čeština', 'duplicate-content-addon-for-polylang' ),
+				'cy'             => __( 'Cymraeg', 'duplicate-content-addon-for-polylang' ),
+				'da-DK'          => __( 'Dansk', 'duplicate-content-addon-for-polylang' ),
+				'de-CH-informal' => __( 'Deutsch (Schweiz, Du)', 'duplicate-content-addon-for-polylang' ),
+				'de-AT'          => __( 'Deutsch (Österreich)', 'duplicate-content-addon-for-polylang' ),
+				'de-CH'          => __( 'Deutsch (Schweiz)', 'duplicate-content-addon-for-polylang' ),
+				'de-DE-formal'   => __( 'Deutsch (Sie)', 'duplicate-content-addon-for-polylang' ),
+				'de-DE'          => __( 'Deutsch', 'duplicate-content-addon-for-polylang' ),
+				'dzo'            => __( 'རྫོང་ཁ', 'duplicate-content-addon-for-polylang' ),
+				'el'             => __( 'Ελληνικά', 'duplicate-content-addon-for-polylang' ),
+				'en-GB'          => __( 'English (UK)', 'duplicate-content-addon-for-polylang' ),
+				'en-AU'          => __( 'English (Australia)', 'duplicate-content-addon-for-polylang' ),
+				'en-CA'          => __( 'English (Canada)', 'duplicate-content-addon-for-polylang' ),
+				'en-ZA'          => __( 'English (South Africa)', 'duplicate-content-addon-for-polylang' ),
+				'en-NZ'          => __( 'English (New Zealand)', 'duplicate-content-addon-for-polylang' ),
+				'eo'             => __( 'Esperanto', 'duplicate-content-addon-for-polylang' ),
+				'es-AR'          => __( 'Español de Argentina', 'duplicate-content-addon-for-polylang' ),
+				'es-MX'          => __( 'Español de México', 'duplicate-content-addon-for-polylang' ),
+				'es-VE'          => __( 'Español de Venezuela', 'duplicate-content-addon-for-polylang' ),
+				'es-ES'          => __( 'Español', 'duplicate-content-addon-for-polylang' ),
+				'es-CO'          => __( 'Español de Colombia', 'duplicate-content-addon-for-polylang' ),
+				'es-UY'          => __( 'Español de Uruguay', 'duplicate-content-addon-for-polylang' ),
+				'es-CR'          => __( 'Español de Costa Rica', 'duplicate-content-addon-for-polylang' ),
+				'es-CL'          => __( 'Español de Chile', 'duplicate-content-addon-for-polylang' ),
+				'es-GT'          => __( 'Español de Guatemala', 'duplicate-content-addon-for-polylang' ),
+				'es-PE'          => __( 'Español de Perú', 'duplicate-content-addon-for-polylang' ),
+				'et'             => __( 'Eesti', 'duplicate-content-addon-for-polylang' ),
+				'eu'             => __( 'Euskara', 'duplicate-content-addon-for-polylang' ),
+				'fa-IR'          => __( 'فارسی', 'duplicate-content-addon-for-polylang' ),
+				'fi'             => __( 'Suomi', 'duplicate-content-addon-for-polylang' ),
+				'fr-CA'          => __( 'Français du Canada', 'duplicate-content-addon-for-polylang' ),
+				'fr-FR'          => __( 'Français', 'duplicate-content-addon-for-polylang' ),
+				'fr-BE'          => __( 'Français de Belgique', 'duplicate-content-addon-for-polylang' ),
+				'fur'            => __( 'Friulian', 'duplicate-content-addon-for-polylang' ),
+				'gd'             => __( 'Gàidhlig', 'duplicate-content-addon-for-polylang' ),
+				'gl-ES'          => __( 'Galego', 'duplicate-content-addon-for-polylang' ),
+				'gu'             => __( 'ગુજરાતી', 'duplicate-content-addon-for-polylang' ),
+				'haz'            => __( 'هزاره گی', 'duplicate-content-addon-for-polylang' ),
+				'he-IL'          => __( 'עִבְרִית', 'duplicate-content-addon-for-polylang' ),
+				'hi-IN'          => __( 'हिन्दी', 'duplicate-content-addon-for-polylang' ),
+				'hr'             => __( 'Hrvatski', 'duplicate-content-addon-for-polylang' ),
+				'hsb'            => __( 'Hornjoserbšćina', 'duplicate-content-addon-for-polylang' ),
+				'hu-HU'          => __( 'Magyar', 'duplicate-content-addon-for-polylang' ),
+				'hy'             => __( 'Հայերեն', 'duplicate-content-addon-for-polylang' ),
+				'id-ID'          => __( 'Bahasa Indonesia', 'duplicate-content-addon-for-polylang' ),
+				'is-IS'          => __( 'Íslenska', 'duplicate-content-addon-for-polylang' ),
+				'it-IT'          => __( 'Italiano', 'duplicate-content-addon-for-polylang' ),
+				'ja'             => __( '日本語', 'duplicate-content-addon-for-polylang' ),
+				'jv-ID'          => __( 'Basa Jawa', 'duplicate-content-addon-for-polylang' ),
+				'ka-GE'          => __( 'ქართული', 'duplicate-content-addon-for-polylang' ),
+				'kab'            => __( 'Taqbaylit', 'duplicate-content-addon-for-polylang' ),
+				'kk'             => __( 'Қазақ тілі', 'duplicate-content-addon-for-polylang' ),
+				'km'             => __( 'ភាសាខ្មែរ', 'duplicate-content-addon-for-polylang' ),
+				'kn'             => __( 'ಕನ್ನಡ', 'duplicate-content-addon-for-polylang' ),
+				'ko-KR'          => __( '한국어', 'duplicate-content-addon-for-polylang' ),
+				'ckb'            => __( 'كوردی&lrm', 'duplicate-content-addon-for-polylang' ),
+				'lo'             => __( 'ພາສາລາວ', 'duplicate-content-addon-for-polylang' ),
+				'lt-LT'          => __( 'Lietuvių kalba', 'duplicate-content-addon-for-polylang' ),
+				'lv'             => __( 'Latviešu valoda', 'duplicate-content-addon-for-polylang' ),
+				'mk-MK'          => __( 'Македонски јазик', 'duplicate-content-addon-for-polylang' ),
+				'ml-IN'          => __( 'മലയാളം', 'duplicate-content-addon-for-polylang' ),
+				'mn'             => __( 'Монгол', 'duplicate-content-addon-for-polylang' ),
+				'mr'             => __( 'मराठी', 'duplicate-content-addon-for-polylang' ),
+				'ms-MY'          => __( 'Bahasa Melayu', 'duplicate-content-addon-for-polylang' ),
+				'my-MM'          => __( 'ဗမာစာ', 'duplicate-content-addon-for-polylang' ),
+				'nb-NO'          => __( 'Norsk bokmål', 'duplicate-content-addon-for-polylang' ),
+				'ne-NP'          => __( 'नेपाली', 'duplicate-content-addon-for-polylang' ),
+				'nl-NL'          => __( 'Nederlands', 'duplicate-content-addon-for-polylang' ),
+				'nl-NL-formal'   => __( 'Nederlands (Formeel)', 'duplicate-content-addon-for-polylang' ),
+				'nl-BE'          => __( 'Nederlands (België)', 'duplicate-content-addon-for-polylang' ),
+				'nn-NO'          => __( 'Norsk nynorsk', 'duplicate-content-addon-for-polylang' ),
+				'oci'            => __( 'Occitan', 'duplicate-content-addon-for-polylang' ),
+				'pa-IN'          => __( 'ਪੰਜਾਬੀ', 'duplicate-content-addon-for-polylang' ),
+				'pl-PL'          => __( 'Polski', 'duplicate-content-addon-for-polylang' ),
+				'ps'             => __( 'پښتو', 'duplicate-content-addon-for-polylang' ),
+				'pt-PT-ao90'     => __( 'Português (AO90)', 'duplicate-content-addon-for-polylang' ),
+				'pt-AO'          => __( 'Português de Angola', 'duplicate-content-addon-for-polylang' ),
+				'pt-BR'          => __( 'Português do Brasil', 'duplicate-content-addon-for-polylang' ),
+				'pt-PT'          => __( 'Português', 'duplicate-content-addon-for-polylang' ),
+				'rhg'            => __( 'Ruáinga', 'duplicate-content-addon-for-polylang' ),
+				'ro-RO'          => __( 'Română', 'duplicate-content-addon-for-polylang' ),
+				'ru-RU'          => __( 'Русский', 'duplicate-content-addon-for-polylang' ),
+				'sah'            => __( 'Сахалыы', 'duplicate-content-addon-for-polylang' ),
+				'snd'            => __( 'سنڌي', 'duplicate-content-addon-for-polylang' ),
+				'si-LK'          => __( 'සිංහල', 'duplicate-content-addon-for-polylang' ),
+				'sk-SK'          => __( 'Slovenčina', 'duplicate-content-addon-for-polylang' ),
+				'skr'            => __( 'سرائیکی', 'duplicate-content-addon-for-polylang' ),
+				'sl-SI'          => __( 'Slovenščina', 'duplicate-content-addon-for-polylang' ),
+				'sq'             => __( 'Shqip', 'duplicate-content-addon-for-polylang' ),
+				'sr-RS'          => __( 'Српски језик', 'duplicate-content-addon-for-polylang' ),
+				'sv-SE'          => __( 'Svenska', 'duplicate-content-addon-for-polylang' ),
+				'sw'             => __( 'Kiswahili', 'duplicate-content-addon-for-polylang' ),
+				'szl'            => __( 'Ślōnskŏ gŏdka', 'duplicate-content-addon-for-polylang' ),
+				'ta-IN'          => __( 'தமிழ்', 'duplicate-content-addon-for-polylang' ),
+				'te'             => __( 'తెలుగు', 'duplicate-content-addon-for-polylang' ),
+				'th'             => __( 'ไทย', 'duplicate-content-addon-for-polylang' ),
+				'tl'             => __( 'Tagalog', 'duplicate-content-addon-for-polylang' ),
+				'tr-TR'          => __( 'Türkçe', 'duplicate-content-addon-for-polylang' ),
+				'tt-RU'          => __( 'Татар теле', 'duplicate-content-addon-for-polylang' ),
+				'tah'            => __( 'Reo Tahiti', 'duplicate-content-addon-for-polylang' ),
+				'ug-CN'          => __( 'ئۇيغۇرچە', 'duplicate-content-addon-for-polylang' ),
+				'uk'             => __( 'Українська', 'duplicate-content-addon-for-polylang' ),
+				'ur'             => __( 'اردو', 'duplicate-content-addon-for-polylang' ),
+				'uz-UZ'          => __( 'O‘zbekcha', 'duplicate-content-addon-for-polylang' ),
+				'vi'             => __( 'Tiếng Việt', 'duplicate-content-addon-for-polylang' ),
+				'zh-CN'          => __( '简体中文', 'duplicate-content-addon-for-polylang' ),
+				'zh-TW'          => __( '繁體中文', 'duplicate-content-addon-for-polylang' ),
+				'zh-HK'          => __( '香港中文版', 'duplicate-content-addon-for-polylang' ),
 			);
 
 			$wplang        = $lang_array[ $lang_code ];
@@ -284,7 +284,7 @@ if ( ! class_exists( 'duplicateContentAddon' ) ) {
 			?>
 			<input type="button" class="dupcap-copy-button button button-primary" data-from_lang="<?php echo $original_lang; ?>" name="dupcap_meta_box_text" id="dupcap-copy-button" value="
 					<?php
-					echo __( 'Duplicate content from ', 'dupcap' );
+					echo __( 'Duplicate content from ', 'duplicate-content-addon-for-polylang' );
 					echo $original_lang;
 					?>
 						" readonly/><br><br>
@@ -385,7 +385,7 @@ if ( ! class_exists( 'duplicateContentAddon' ) ) {
 							$from_post_id = (int) filter_var( $_GET['from_post'], FILTER_SANITIZE_NUMBER_INT );
 							?>
 			<div class="notice notice-success is-dismissible">
-					<p><b><?php echo __( 'Copied', 'dupcap' ); ?>:</b><?php echo __( 'The title and content succesfully copied from', 'dupcap' ); ?>"<?php echo get_post( $from_post_id )->post_title; ?>" (<?php echo __( 'in', 'dupcap' ); ?> <?php echo pll_get_post_language( $from_post_id, 'name' ); ?>).</p>
+					<p><b><?php echo __( 'Copied', 'duplicate-content-addon-for-polylang' ); ?>:</b><?php echo __( 'The title and content succesfully copied from', 'duplicate-content-addon-for-polylang' ); ?>"<?php echo get_post( $from_post_id )->post_title; ?>" (<?php echo __( 'in', 'duplicate-content-addon-for-polylang' ); ?> <?php echo pll_get_post_language( $from_post_id, 'name' ); ?>).</p>
 			</div>
 							<?php
 						}

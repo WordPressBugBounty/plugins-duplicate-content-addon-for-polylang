@@ -4,7 +4,7 @@ Tags:polylang,duplicate page,Automatic Translation,ai translation,Content duplic
 Requires at least:5.0
 Tested up to:6.8
 Requires PHP:7.2
-Stable tag:1.2.4
+Stable tag:1.2.5
 Author URI:https://profiles.wordpress.org/khushwantsidhu/
 License:GPLv2 or later
 License URI:http://www.gnu.org/licenses/gpl-2.0.html
@@ -19,13 +19,11 @@ This addon enables you to <strong>replicate page/post titles, content, images, g
 
 == Check out our Automatic Translations For Polylang ==
 
- Automate your translation workflow by 90% with  **[Automatic Translations For Polylang](https://coolplugins.short.gy/ai-translation-for-polylang)**. 
+ Automate your translation workflow by 90% with  **[Automatic Translations For Polylang](https://go.coolplugins.net/ai-translation)**. 
 
 This powerful addon effortlessly copies your original or default language post content and translates it into other languages, simplifying and speeding up the entire translation process.
 
 https://youtu.be/ecHsOyIL_J4
-
-**[Check It Now ](https://coolplugins.short.gy/ai-translation-for-polylang)**
 
 == Key Features ==
 
@@ -47,26 +45,14 @@ https://youtu.be/ecHsOyIL_J4
 
 https://www.youtube.com/watch?v=yamFwNRWEbc
 
-==  AI Automatic Translations For Polylang  Key Features Key Features ==
 
-- **Automatic Content Translation:** Effortlessly translate post titles, content, images, galleries, and meta fields from one language to another using the Yandex Translate API.
-  
-- **Gutenberg Block Compatibility:** Specifically designed to translate content within Gutenberg blocks, including core blocks and popular third-party blocks like Spectra, Kadence, Stackable, Otter, and Essential.
+### Check It Now
 
-- **One-Click Duplication:** Easily duplicate your original or default language content into other languages, saving time and reducing manual work.
+[AI Translation For Polylang](https://coolplugins.net/product/automatic-translations-for-polylang/?utm_source=dupcap_plugin&utm_medium=readme&utm_campaign=atfp_get_pro&utm_content=check_out) is a powerful addon that streamlines the process of translating WordPress content.
 
-- **Style and Format Preservation:** The plugin retains all styles, formats, and layouts from the original post, ensuring that your translated content maintains a consistent appearance.
+[Language Switcher – Polylang for Divi](https://wordpress.org/plugins/language-switcher-for-divi-polylang/) is a language switcher plugin to add a language switcher to Divi pages with Polylang.
 
-- **Multilingual Management:** Simplifies the process of managing a multilingual website by automating translation tasks and reducing the need for repetitive actions.
-
-- **No Account Required:** Use the Yandex Translate API without needing to create a separate Yandex account, making it straightforward to set up and use.
-
-- **Custom Block Support:** While optimized for Gutenberg blocks, the plugin also works with several third-party block plugins, extending its versatility.
-
-- **Easy to Use:** Designed with a user-friendly interface, making it accessible even for those with limited technical knowledge.
-
-**[Check It Now ](https://coolplugins.short.gy/ai-translation-for-polylang)**
-
+[Language Switcher for Elementor & Polylang](https://go.coolplugins.net/language-switcher) Add a language switcher to Elementor and link translated templates with Polylang.
 
 > This plugin is not developed by or affiliated with the "**Polylang developers**". It is a third-party addon that provides duplicate content functionality to quickly translate your post with the same styles into other languages.
 
@@ -142,6 +128,12 @@ You can report security bugs through the Patchstack Vulnerability Disclosure Pro
 
 
 == Changelog ==
+
+<strong>Version 1.2.5 | 10 Jun 2025</strong>
+<pre>
+Fixed: Text domain mismatch for proper localization support.
+Tweaks: Textual changes.
+</pre>
 <strong>Version 1.2.4 | 02 May 2025</strong>
 <pre>
 Tested Upto:WordPress version 6.8 and Polylang version 3.7

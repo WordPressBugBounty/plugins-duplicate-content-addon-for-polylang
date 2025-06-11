@@ -1,7 +1,7 @@
 (function($){
     $(document).ready(function(){
         let plugin_name = 'duplicate-content-addon-for-polylang';
-        let plugin_slug = 'dupcap';
+        let plugin_slug = 'duplicate-content-addon-for-polylang';
         $target = $('#the-list').find('[data-slug="'+plugin_name+'"] span.deactivate a');
         
 

@@ -73,10 +73,10 @@ if ( ! class_exists( 'dupcapFeedbackNotice' ) ) {
 			$img_path           = DUPCAP_URL . 'assets/images/dupcap-logo.png';
 			$p_name             = 'Duplicate Content Addon For Polylang';
 			$like_it_text       = 'Rate Now! ★★★★★';
-			$already_rated_text = esc_html__( 'I already rated it', 'fdupcap' );
-			$not_like_it_text   = esc_html__( 'No, not good enough, i do not like to rate it!', 'fdupcap' );
+			$already_rated_text = esc_html__( 'I already rated it', 'duplicate-content-addon-for-polylang' );
+			$not_like_it_text   = esc_html__( 'No, not good enough, i do not like to rate it!', 'duplicate-content-addon-for-polylang' );
 			$p_link             = esc_url( 'https://wordpress.org/support/plugin/duplicate-content-addon-for-polylang/reviews/#new-post' );
-			$not_interested     = esc_html__( 'Not Interested', 'ect' );
+			$not_interested     = esc_html__( 'Not Interested', 'duplicate-content-addon-for-polylang' );
 			$nonce              = wp_create_nonce( 'dupcap_review_nonce' );
 
 			$message = "Thanks for using <b>$p_name</b> WordPress plugin. We hope it meets your expectations! <br/>Please give us a quick rating, it works as a boost for us to keep working on more <a href='https://coolplugins.net' target='_blank'><strong>Cool Plugins</strong></a>!<br/>";

@@ -46,7 +46,7 @@ if ( ! class_exists( 'dupcap_notices' ) ) :
 					$notice_content = sprintf(
 						__(
 							'🎉 Great News! We see you are using <strong>%1$s</strong> plugin. Why not supercharge your workflow with the <a href="%2$s" class="thickbox"title="%3$s">%4$s</a>.</br> Enjoy effortless translations with just one click—saving you valuable time and energy!.</br><a class="button button-primarythickbox" href="%2$s" target="_blank" style="margin-top: 6px;">Try it now!</a>',
-							'dupcap'
+							'duplicate-content-addon-for-polylang'
 						),
 						esc_html( $plugin_info['Name'] ),
 						esc_url( $url ),
@@ -91,7 +91,7 @@ if ( ! class_exists( 'dupcap_notices' ) ) :
 
 		public function dupcap_notice_dismiss() {
 			if ( ! check_ajax_referer( 'dupcap_atp_notice', 'nonce', false ) ) {
-				wp_send_json_error( __( 'Invalid security token sent.', 'dupcap' ) );
+				wp_send_json_error( __( 'Invalid security token sent.', 'duplicate-content-addon-for-polylang' ) );
 				wp_die( '0', 400 );
 			}
 

@@ -6,7 +6,7 @@ class UsersFeedback {
 	private $plugin_url     = DUPCAP_URL;
 	private $plugin_version = DUPCAP_VERSION;
 	private $plugin_name    = 'Duplicate Content Addon For Polylang';
-	private $plugin_slug    = 'dupcap';
+	private $plugin_slug    = 'duplicate-content-addon-for-polylang';
 	private $feedback_url   = 'http://feedback.coolplugins.net/wp-json/coolplugins-feedback/v1/feedback';
 
 	/*
@@ -48,24 +48,24 @@ class UsersFeedback {
 		}
 		$deactivate_reasons = array(
 			'didnt_work_as_expected'         => array(
-				'title'             => __( 'The plugin didn\'t work as expected', 'cool-plugins' ),
+				'title'             => __( 'The plugin didn\'t work as expected', 'duplicate-content-addon-for-polylang' ),
 				'input_placeholder' => 'What did you expect?',
 			),
 			'found_a_better_plugin'          => array(
-				'title'             => __( 'I found a better plugin', 'cool-plugins' ),
-				'input_placeholder' => __( 'Please share which plugin', 'cool-plugins' ),
+				'title'             => __( 'I found a better plugin', 'duplicate-content-addon-for-polylang' ),
+				'input_placeholder' => __( 'Please share which plugin', 'duplicate-content-addon-for-polylang' ),
 			),
 			'couldnt_get_the_plugin_to_work' => array(
-				'title'             => __( 'The plugin is not working', 'cool-plugins' ),
+				'title'             => __( 'The plugin is not working', 'duplicate-content-addon-for-polylang' ),
 				'input_placeholder' => 'Please share your issue. So we can fix that for other users.',
 			),
 			'temporary_deactivation'         => array(
-				'title'             => __( 'It\'s a temporary deactivation', 'cool-plugins' ),
+				'title'             => __( 'It\'s a temporary deactivation', 'duplicate-content-addon-for-polylang' ),
 				'input_placeholder' => '',
 			),
 			'other'                          => array(
-				'title'             => __( 'Other', 'cool-plugins' ),
-				'input_placeholder' => __( 'Please share the reason', 'cool-plugins' ),
+				'title'             => __( 'Other', 'duplicate-content-addon-for-polylang' ),
+				'input_placeholder' => __( 'Please share the reason', 'duplicate-content-addon-for-polylang' ),
 			),
 		);
 
@@ -74,7 +74,7 @@ class UsersFeedback {
 						
 			<div class="cool-plugins-deactivation-response">
 			<div id="cool-plugins-deactivate-feedback-dialog-header">
-				<span id="cool-plugins-feedback-form-title"><?php echo __( 'Quick Feedback', 'cool-plugins' ); ?></span>
+				<span id="cool-plugins-feedback-form-title"><?php echo __( 'Quick Feedback', 'duplicate-content-addon-for-polylang' ); ?></span>
 			</div>
 			<div id="cool-plugins-loader-wrapper">
 				<div class="cool-plugins-loader-container">
@@ -87,7 +87,7 @@ class UsersFeedback {
 				wp_nonce_field( '_cool-plugins_deactivate_feedback_nonce' );
 				?>
 				<input type="hidden" name="action" value="cool-plugins_deactivate_feedback" />
-				<div id="cool-plugins-deactivate-feedback-dialog-form-caption"><?php echo __( 'If you have a moment, please share why you are deactivating this plugin.', 'cool-plugins' ); ?></div>
+				<div id="cool-plugins-deactivate-feedback-dialog-form-caption"><?php echo __( 'If you have a moment, please share why you are deactivating this plugin.', 'duplicate-content-addon-for-polylang' ); ?></div>
 				<div id="cool-plugins-deactivate-feedback-dialog-form-body">
 					<?php foreach ( $deactivate_reasons as $reason_key => $reason ) : ?>
 						<div class="cool-plugins-deactivate-feedback-dialog-input-wrapper">
@@ -101,7 +101,7 @@ class UsersFeedback {
 							<?php endif; ?>
 						</div>
 					<?php endforeach; ?>
-					<input class="cool-plugins-GDPR-data-notice" id="cool-plugins-GDPR-data-notice" type="checkbox"><label for="cool-plugins-GDPR-data-notice"><?php echo __( 'I consent to having Cool Plugins store my all submitted information via this form, they can also respond to my inquiry.', 'cool-plugins' ); ?></label>
+					<input class="cool-plugins-GDPR-data-notice" id="cool-plugins-GDPR-data-notice" type="checkbox"><label for="cool-plugins-GDPR-data-notice"><?php echo __( 'I consent to having Cool Plugins store my all submitted information via this form, they can also respond to my inquiry.', 'duplicate-content-addon-for-polylang' ); ?></label>
 				</div>
 				<div class="cool-plugin-popup-button-wrapper">
 					<a class="cool-plugins-button button-deactivate" id="cool-plugin-submitNdeactivate">Submit and Deactivate</a>
@@ -123,24 +123,24 @@ class UsersFeedback {
 			$reason             = htmlspecialchars( $reason, ENT_QUOTES );
 			$deactivate_reasons = array(
 				'didnt_work_as_expected'         => array(
-					'title'             => __( 'The plugin didn\'t work as expected', 'cool-plugins' ),
+					'title'             => __( 'The plugin didn\'t work as expected', 'duplicate-content-addon-for-polylang' ),
 					'input_placeholder' => 'What did you expect?',
 				),
 				'found_a_better_plugin'          => array(
-					'title'             => __( 'I found a better plugin', 'cool-plugins' ),
-					'input_placeholder' => __( 'Please share which plugin', 'cool-plugins' ),
+					'title'             => __( 'I found a better plugin', 'duplicate-content-addon-for-polylang' ),
+					'input_placeholder' => __( 'Please share which plugin', 'duplicate-content-addon-for-polylang' ),
 				),
 				'couldnt_get_the_plugin_to_work' => array(
-					'title'             => __( 'The plugin is not working', 'cool-plugins' ),
+					'title'             => __( 'The plugin is not working', 'duplicate-content-addon-for-polylang' ),
 					'input_placeholder' => 'Please share your issue. So we can fix that for other users.',
 				),
 				'temporary_deactivation'         => array(
-					'title'             => __( 'It\'s a temporary deactivation', 'cool-plugins' ),
+					'title'             => __( 'It\'s a temporary deactivation', 'duplicate-content-addon-for-polylang' ),
 					'input_placeholder' => '',
 				),
 				'other'                          => array(
-					'title'             => __( 'Other', 'cool-plugins' ),
-					'input_placeholder' => __( 'Please share the reason', 'cool-plugins' ),
+					'title'             => __( 'Other', 'duplicate-content-addon-for-polylang' ),
+					'input_placeholder' => __( 'Please share the reason', 'duplicate-content-addon-for-polylang' ),
 				),
 			);
 
