@@ -28,7 +28,13 @@ if ( ! class_exists( 'dupcapFeedbackNotice' ) ) {
 		}
 		// ajax callback for review notice
 		public function dupcap_dismiss_review_notice() {
-			if ( ! wp_verify_nonce( $_POST['private'], 'dupcap_review_nonce' ) ) {
+
+			if(!current_user_can('manage_options')){
+				wp_send_json_error( __( 'Unauthorized', 'duplicate-content-addon-for-polylang' ), 403 );
+				wp_die( '0', 403 );
+			}
+
+			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['private'] ) ), 'dupcap_review_nonce' ) ) {
 				wp_send_json_error( array( 'message' => 'nonce verification failed' ) );
 				exit();
 			}

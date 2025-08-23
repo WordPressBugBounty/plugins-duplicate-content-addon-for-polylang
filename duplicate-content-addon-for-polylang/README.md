@@ -1,0 +1,1 @@
+# duplicate-content-addon-for-polylang

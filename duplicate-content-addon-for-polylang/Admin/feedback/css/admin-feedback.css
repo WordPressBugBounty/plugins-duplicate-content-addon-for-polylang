@@ -8,10 +8,11 @@
 }
 .cool-plugins-deactivation-response{
     position: fixed;
-    left: 35%;
+    left: 18%;
     top: 22%;
+    right: 18%;
     z-index: 9999;
-    color:white;
+    color: white;
 }
 .cool-plugins-button{
     border: none;
@@ -25,9 +26,15 @@
     background-color: #7bc6de;
     color: white;
 }
-#cool-plugins-deactivate-feedback-dialog-form-body .cool-plugins-deactivate-feedback-dialog-input:not(:checked)~.cool-plugins-feedback-text {
+
+#cool-plugins-deactivate-feedback-dialog-form-body .cool-plugins-deactivate-feedback-dialog-input:not(:checked)~:where(.cool-plugins-feedback-text,.cool-plugins-extra-links) {
     display: none;
 }
+
+#cool-plugins-deactivate-feedback-dialog-form-body .cool-plugins-extra-links{
+    margin: -.5rem 0 1.3rem .5rem;
+}
+
 .cool-plugins-deactivation-response label{
     display: block;
 }
@@ -112,7 +119,7 @@ a.cool-plugins-button:hover {
     background-color: silver;
 }
 
-#cool-plugins-form-wrapper input#cool-plugins-GDPR-data-notice {
+#cool-plugins-form-wrapper input#cool-plugins-GDPR-data-notice-dupcap {
     float: left;
     margin-top: 4px !important;
 }

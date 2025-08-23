@@ -1,14 +1,18 @@
 <?php
 
+namespace Dupcap\feedback;
 
-class UsersFeedback {
+// Exit if accessed directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+class DupcapUsersFeedback {
 
 	private $plugin_url     = DUPCAP_URL;
 	private $plugin_version = DUPCAP_VERSION;
 	private $plugin_name    = 'Duplicate Content Addon For Polylang';
 	private $plugin_slug    = 'duplicate-content-addon-for-polylang';
-	private $feedback_url   = 'http://feedback.coolplugins.net/wp-json/coolplugins-feedback/v1/feedback';
-
+	private $plugin_domain  = 'dupcap';
 	/*
 	|-----------------------------------------------------------------|
 	|   Use this constructor to fire all actions and filters          |
@@ -48,60 +52,64 @@ class UsersFeedback {
 		}
 		$deactivate_reasons = array(
 			'didnt_work_as_expected'         => array(
-				'title'             => __( 'The plugin didn\'t work as expected', 'duplicate-content-addon-for-polylang' ),
+				'title'             => esc_html( __( 'The plugin didn\'t work as expected', 'duplicate-content-addon-for-polylang' ) ),
 				'input_placeholder' => 'What did you expect?',
 			),
 			'found_a_better_plugin'          => array(
-				'title'             => __( 'I found a better plugin', 'duplicate-content-addon-for-polylang' ),
-				'input_placeholder' => __( 'Please share which plugin', 'duplicate-content-addon-for-polylang' ),
+				'title'             => esc_html( __( 'I found a better plugin', 'duplicate-content-addon-for-polylang' ) ),
+				'input_placeholder' => esc_html( __( 'Please share which plugin', 'duplicate-content-addon-for-polylang' ) ),
 			),
 			'couldnt_get_the_plugin_to_work' => array(
-				'title'             => __( 'The plugin is not working', 'duplicate-content-addon-for-polylang' ),
+				'title'             => esc_html( __( 'The plugin is not working', 'duplicate-content-addon-for-polylang' ) ),
 				'input_placeholder' => 'Please share your issue. So we can fix that for other users.',
 			),
 			'temporary_deactivation'         => array(
-				'title'             => __( 'It\'s a temporary deactivation', 'duplicate-content-addon-for-polylang' ),
+				'title'             => esc_html( __( 'It\'s a temporary deactivation', 'duplicate-content-addon-for-polylang' ) ),
 				'input_placeholder' => '',
 			),
 			'other'                          => array(
-				'title'             => __( 'Other', 'duplicate-content-addon-for-polylang' ),
-				'input_placeholder' => __( 'Please share the reason', 'duplicate-content-addon-for-polylang' ),
+				'title'             => esc_html( __( 'Other', 'duplicate-content-addon-for-polylang' ) ),
+				'input_placeholder' => esc_html( __( 'Please share the reason', 'duplicate-content-addon-for-polylang' ) ),
 			),
 		);
 
 		?>
-		<div id="cool-plugins-deactivate-feedback-dialog-wrapper" class="hide-feedback-popup">
+		<div id="cool-plugins-deactivate-feedback-dialog-wrapper" class="hide-feedback-popup" data-slug="<?php echo esc_attr( $this->plugin_slug ); ?>">
 						
 			<div class="cool-plugins-deactivation-response">
 			<div id="cool-plugins-deactivate-feedback-dialog-header">
-				<span id="cool-plugins-feedback-form-title"><?php echo __( 'Quick Feedback', 'duplicate-content-addon-for-polylang' ); ?></span>
+				<span id="cool-plugins-feedback-form-title"><?php echo esc_html( __( 'Quick Feedback', 'duplicate-content-addon-for-polylang' ) ); ?></span>
 			</div>
 			<div id="cool-plugins-loader-wrapper">
 				<div class="cool-plugins-loader-container">
-					<img class="cool-plugins-preloader" src="<?php echo $this->plugin_url; ?>Admin/feedback/images/cool-plugins-preloader.gif">
+					<img class="cool-plugins-preloader" src="<?php echo esc_url( $this->plugin_url ); ?>Admin/feedback/images/cool-plugins-preloader.gif">
 				</div>
 			</div>
 			<div id="cool-plugins-form-wrapper" class="cool-plugins-form-wrapper-cls">
 			<form id="cool-plugins-deactivate-feedback-dialog-form" method="post">
 				<?php
-				wp_nonce_field( '_cool-plugins_deactivate_feedback_nonce' );
+				wp_nonce_field( '_cool-plugins_deactivate_feedback_nonce', "$this->plugin_slug-wpnonce" );
 				?>
 				<input type="hidden" name="action" value="cool-plugins_deactivate_feedback" />
-				<div id="cool-plugins-deactivate-feedback-dialog-form-caption"><?php echo __( 'If you have a moment, please share why you are deactivating this plugin.', 'duplicate-content-addon-for-polylang' ); ?></div>
+				<div id="cool-plugins-deactivate-feedback-dialog-form-caption"><?php echo esc_html( __( 'If you have a moment, please share why you are deactivating this plugin.', 'duplicate-content-addon-for-polylang' ) ); ?></div>
 				<div id="cool-plugins-deactivate-feedback-dialog-form-body">
-					<?php foreach ( $deactivate_reasons as $reason_key => $reason ) : ?>
+					<?php
+					foreach ( $deactivate_reasons as $reason_key => $reason ) :
+						?>
 						<div class="cool-plugins-deactivate-feedback-dialog-input-wrapper">
 							<input id="cool-plugins-deactivate-feedback-<?php echo esc_attr( $reason_key ); ?>" class="cool-plugins-deactivate-feedback-dialog-input" type="radio" name="reason_key" value="<?php echo esc_attr( $reason_key ); ?>" />
 							<label for="cool-plugins-deactivate-feedback-<?php echo esc_attr( $reason_key ); ?>" class="cool-plugins-deactivate-feedback-dialog-label"><?php echo esc_html( $reason['title'] ); ?></label>
 							<?php if ( ! empty( $reason['input_placeholder'] ) ) : ?>
-								<textarea class="cool-plugins-feedback-text" type="textarea" name="reason_<?php echo esc_attr( $reason_key ); ?>" placeholder="<?php echo esc_attr( $reason['input_placeholder'] ); ?>"></textarea>
-							<?php endif; ?>
+								<textarea class="cool-plugins-feedback-text" type="textarea" name="<?php echo esc_attr( $this->plugin_domain ); ?>_reason_<?php echo esc_attr( $reason_key ); ?>" placeholder="<?php echo esc_attr( $reason['input_placeholder'] ); ?>"></textarea>
+								<?php
+							endif;
+							?>
 							<?php if ( ! empty( $reason['alert'] ) ) : ?>
 								<div class="cool-plugins-feedback-text"><?php echo esc_html( $reason['alert'] ); ?></div>
 							<?php endif; ?>
 						</div>
 					<?php endforeach; ?>
-					<input class="cool-plugins-GDPR-data-notice" id="cool-plugins-GDPR-data-notice" type="checkbox"><label for="cool-plugins-GDPR-data-notice"><?php echo __( 'I consent to having Cool Plugins store my all submitted information via this form, they can also respond to my inquiry.', 'duplicate-content-addon-for-polylang' ); ?></label>
+					<input class="cool-plugins-GDPR-data-notice" id="cool-plugins-GDPR-data-notice-<?php echo esc_attr( $this->plugin_domain ); ?>" type="checkbox"><label for="cool-plugins-GDPR-data-notice"><?php echo esc_html( __( 'I agree to share anonymous usage data and basic site details (such as server, PHP, and WordPress versions) to support Duplicate Content Addon For Polylang improvement efforts. Additionally, I allow Cool Plugins to store all information provided through this form and to respond to my inquiry.', 'duplicate-content-addon-for-polylang' ) ); ?></label>
 				</div>
 				<div class="cool-plugin-popup-button-wrapper">
 					<a class="cool-plugins-button button-deactivate" id="cool-plugin-submitNdeactivate">Submit and Deactivate</a>
@@ -115,47 +123,64 @@ class UsersFeedback {
 	}
 
 
+
 	function submit_deactivation_response() {
-		if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( $_POST['_wpnonce'], '_cool-plugins_deactivate_feedback_nonce' ) ) {
+
+		if(!current_user_can('manage_options')){
+			wp_send_json_error( __( 'Unauthorized', 'duplicate-content-addon-for-polylang' ), 403 );
+			wp_die( '0', 403 );
+		}
+
+		if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), '_cool-plugins_deactivate_feedback_nonce' ) ) {
 			wp_send_json_error();
 		} else {
-			$reason             = isset( $_POST['reason'] ) ? $_POST['reason'] : '';
-			$reason             = htmlspecialchars( $reason, ENT_QUOTES );
+			$reason             = sanitize_text_field( wp_unslash( $_POST['reason'] ) );
 			$deactivate_reasons = array(
 				'didnt_work_as_expected'         => array(
-					'title'             => __( 'The plugin didn\'t work as expected', 'duplicate-content-addon-for-polylang' ),
+					'title'             => esc_html( __( 'The plugin didn\'t work as expected', 'duplicate-content-addon-for-polylang' ) ),
 					'input_placeholder' => 'What did you expect?',
 				),
 				'found_a_better_plugin'          => array(
-					'title'             => __( 'I found a better plugin', 'duplicate-content-addon-for-polylang' ),
-					'input_placeholder' => __( 'Please share which plugin', 'duplicate-content-addon-for-polylang' ),
+					'title'             => esc_html( __( 'I found a better plugin', 'duplicate-content-addon-for-polylang' ) ),
+					'input_placeholder' => esc_html( __( 'Please share which plugin', 'duplicate-content-addon-for-polylang' ) ),
 				),
 				'couldnt_get_the_plugin_to_work' => array(
-					'title'             => __( 'The plugin is not working', 'duplicate-content-addon-for-polylang' ),
+					'title'             => esc_html( __( 'The plugin is not working', 'duplicate-content-addon-for-polylang' ) ),
 					'input_placeholder' => 'Please share your issue. So we can fix that for other users.',
 				),
 				'temporary_deactivation'         => array(
-					'title'             => __( 'It\'s a temporary deactivation', 'duplicate-content-addon-for-polylang' ),
+					'title'             => esc_html( __( 'It\'s a temporary deactivation', 'duplicate-content-addon-for-polylang' ) ),
 					'input_placeholder' => '',
 				),
 				'other'                          => array(
-					'title'             => __( 'Other', 'duplicate-content-addon-for-polylang' ),
-					'input_placeholder' => __( 'Please share the reason', 'duplicate-content-addon-for-polylang' ),
+					'title'             => esc_html( __( 'Other', 'duplicate-content-addon-for-polylang' ) ),
+					'input_placeholder' => esc_html( __( 'Please share the reason', 'duplicate-content-addon-for-polylang' ) ),
 				),
 			);
 
 			$deativation_reason = array_key_exists( $reason, $deactivate_reasons ) ? $reason : 'other';
 
-			$sanitized_message = sanitize_text_field( $_POST['message'] ) == '' ? 'N/A' : sanitize_text_field( $_POST['message'] );
+			$sanitized_message = !empty($_POST['message']) ? sanitize_text_field($_POST['message']) : 'N/A';
 			$admin_email       = sanitize_email( get_option( 'admin_email' ) );
 			$site_url          = esc_url( site_url() );
+			$install_date      = get_option('dupcap-installDate');
+			$plugin_initial =  get_option( 'dupcap_initial_save_version' );
+			$unique_key     = '41';  // Ensure this key is unique per plugin to prevent collisions when site URL and install date are the same across plugins
+			$server_info 	   = \duplicateContentAddon::dupcap_get_user_info()['server_info'];
+			$extra_details 	   = \duplicateContentAddon::dupcap_get_user_info()['extra_details'];
+			$site_id        = $site_url . '-' . $install_date . '-' . $unique_key;
+			$feedback_url      = esc_url( DUPCAP_FEEDBACK_API . 'wp-json/coolplugins-feedback/v1/feedback' );
 			$response          = wp_remote_post(
-				$this->feedback_url,
+				$feedback_url,
 				array(
 					'timeout' => 30,
 					'body'    => array(
+						'site_id'=>md5($site_id),
+						'server_info' => serialize($server_info),
+						'extra_details' => serialize($extra_details),
 						'plugin_version' => $this->plugin_version,
 						'plugin_name'    => $this->plugin_name,
+						'plugin_initial'  => isset($plugin_initial) ? sanitize_text_field($plugin_initial) : 'N/A',
 						'reason'         => $deativation_reason,
 						'review'         => $sanitized_message,
 						'email'          => $admin_email,
@@ -164,9 +189,9 @@ class UsersFeedback {
 				)
 			);
 
-			die( json_encode( array( 'response' => $response ) ) );
+			die( wp_send_json_success( array( 'response' => $response ) ) );
 		}
 
 	}
 }
-new UsersFeedback();
+new DupcapUsersFeedback();
