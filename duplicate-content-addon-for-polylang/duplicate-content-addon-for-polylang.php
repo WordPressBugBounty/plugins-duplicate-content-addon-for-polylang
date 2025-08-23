@@ -2,7 +2,7 @@
 /*
 Plugin Name: Duplicate Content Addon For Polylang
 Plugin URI: https://coolplugins.net/
-Version: 1.2.6
+Version: 1.2.7
 Author: Cool Plugins
 Author URI: https://coolplugins.net/?utm_source=pdca_plugin&utm_medium=inside&utm_campaign=author_page&utm_content=plugins_list
 Description: Duplicate content addon for Polylang to copy content from one language post to other language post for easy and quick translation.
@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 if ( ! defined( 'DUPCAP_VERSION' ) ) {
-	define( 'DUPCAP_VERSION', '1.2.6' );
+	define( 'DUPCAP_VERSION', '1.2.7' );
 }
 if ( ! defined( 'DUPCAP_DIR_PATH' ) ) {
 	define( 'DUPCAP_DIR_PATH', plugin_dir_path( __FILE__ ) );
