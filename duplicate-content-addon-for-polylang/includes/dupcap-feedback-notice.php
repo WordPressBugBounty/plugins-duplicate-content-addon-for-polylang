@@ -11,38 +11,26 @@ if ( ! class_exists( 'dupcapFeedbackNotice' ) ) {
 			// register actions
 
 			if ( is_admin() ) {
+
 				add_action( 'admin_notices', array( $this, 'dupcap_admin_notice_for_reviews' ) );
-				add_action( 'admin_print_scripts', array( $this, 'dupcap_load_script' ) );
 				add_action( 'wp_ajax_dupcap_dismiss_notice', array( $this, 'dupcap_dismiss_review_notice' ) );
 			}
 		}
 
-		/**
-		 * Load script to dismiss notices.
-		 *
-		 * @return void
-		 */
-	public function dupcap_load_script() {
-		wp_register_script( 'dupcap-feedback-notice-script', DUPCAP_URL . 'assets/js/dupcap-admin-feedback-notice.js', array( 'jquery' ), DUPCAP_VERSION, true );
-		wp_enqueue_script( 'dupcap-feedback-notice-script' );
-		wp_register_style( 'dupcap-feedback-notice-styles', DUPCAP_URL . 'assets/css/dupcap-admin-feedback-notice.css', array(), DUPCAP_VERSION );
-		wp_enqueue_style( 'dupcap-feedback-notice-styles' );
-	}
 		// ajax callback for review notice
 		public function dupcap_dismiss_review_notice() {
 
-		if(!current_user_can('manage_options')){
-			wp_send_json_error( __( 'Unauthorized', 'duplicate-content-addon-for-polylang' ), 403 );
-			wp_die( '0', 403 );
-		}
+			if(!current_user_can('manage_options')){
+				wp_send_json_error( __( 'Unauthorized', 'duplicate-content-addon-for-polylang' ), 403 );
+				wp_die( '0', 403 );
+			}
 
-		if ( ! isset( $_POST['private'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['private'] ) ), 'dupcap_review_nonce' ) ) {
-			wp_send_json_error( array( 'message' => 'nonce verification failed' ) );
-			exit();
-		}
-			update_option( 'dupcap-ratingDiv', 'yes' );
-			echo json_encode( array( 'success' => 'true' ) );
-			exit;
+			if ( ! isset( $_POST['private'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['private'] ) ), 'dupcap_review_nonce' ) ) {
+				wp_send_json_error( array( 'message' => 'nonce verification failed' ) );
+				exit();
+			}
+				update_option( 'dupcap-ratingDiv', 'yes' );
+				wp_send_json_success();
 		}
 		// admin notice
 		public function dupcap_admin_notice_for_reviews() {
@@ -68,8 +56,12 @@ if ( ! class_exists( 'dupcapFeedbackNotice' ) ) {
 
 			// check if installation days is greator then week
 			if ( isset( $diff_days ) && $diff_days >= 3 ) {
-				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-				  echo $this->create_notice_content();
+
+				wp_enqueue_script( 'dupcap-feedback-notice-script', DUPCAP_URL . 'assets/js/dupcap-admin-feedback-notice.js', array( 'jquery' ), DUPCAP_VERSION, true );
+				wp_enqueue_style( 'dupcap-feedback-notice-styles', DUPCAP_URL . 'assets/css/dupcap-admin-feedback-notice.css', array(), DUPCAP_VERSION );
+				
+				// Output is properly escaped within create_notice_content() method
+				echo $this->create_notice_content(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			}
 		}
 
@@ -79,7 +71,7 @@ if ( ! class_exists( 'dupcapFeedbackNotice' ) ) {
 			$ajax_url           = admin_url( 'admin-ajax.php' );
 			$ajax_callback      = 'dupcap_dismiss_notice';
 			$wrap_cls           = 'notice notice-info is-dismissible';
-			$p_name             = 'Duplicate Content Addon For Polylang';
+			$p_name             = esc_html__( 'Duplicate Content Addon For Polylang', 'duplicate-content-addon-for-polylang' );
 			$like_it_text       = 'Rate Now! ★★★★★';
 			$already_rated_text = esc_html__( 'I already rated it', 'duplicate-content-addon-for-polylang' );
 			$not_like_it_text   = esc_html__( 'No, not good enough, i do not like to rate it!', 'duplicate-content-addon-for-polylang' );
@@ -87,7 +79,12 @@ if ( ! class_exists( 'dupcapFeedbackNotice' ) ) {
 			$not_interested     = esc_html__( 'Not Interested', 'duplicate-content-addon-for-polylang' );
 			$nonce              = wp_create_nonce( 'dupcap_review_nonce' );
 
-			$message = "Thanks for using <b>$p_name</b> WordPress plugin. We hope it meets your expectations! <br/>Please give us a quick rating, it works as a boost for us to keep working on more <a href='https://coolplugins.net' target='_blank'><strong>Cool Plugins</strong></a>!<br/>";
+			$message = sprintf(
+				/* translators: %1$s: Plugin name, %2$s: Cool Plugins link */
+				__( 'Thanks for using <b>%1$s</b> WordPress plugin. We hope it meets your expectations! <br/>Please give us a quick rating, it works as a boost for us to keep working on more %2$s!<br/>', 'duplicate-content-addon-for-polylang' ),
+				esc_html( $p_name ),
+				'<a href="https://coolplugins.net" target="_blank"><strong>' . esc_html__( 'Cool Plugins', 'duplicate-content-addon-for-polylang' ) . '</strong></a>'
+			);
 
 				$html = '<div data-ajax-url="%7$s" data-nonce="%10$s" data-ajax-callback="%8$s" class="cool-feedback-notice-wrapper %1$s">
 				<div class="message_container">%3$s
