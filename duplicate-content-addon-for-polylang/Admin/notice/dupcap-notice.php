@@ -39,20 +39,23 @@ if ( ! class_exists( 'dupcap_notices' ) ) :
 					$review_nonce = wp_create_nonce( 'dupcap_atp_notice' );
 					$ajax_url     = admin_url( 'admin-ajax.php' );
 					$url          = 'plugin-install.php?tab=plugin-information&plugin=automatic-translations-for-polylang&TB_iframe=true';
-					$title        = 'Automatic Translations For Polylang';
+					$title        = 'AutoPoly – AI Translation For Polylang';
 					$plugin_info  = get_plugin_data( DUPCAP_FILE, true, true );
 					$logo_url     = DUPCAP_URL . 'assets/images/auto-translate-logo.png';
 
-					$notice_content = sprintf(
-						__(
-							'🎉 Great News! We see you are using <strong>%1$s</strong> plugin. Why not supercharge your workflow with the <a href="%2$s" class="thickbox"title="%3$s">%4$s</a>.</br> Enjoy effortless translations with just one click—saving you valuable time and energy!.</br><a class="button button-primarythickbox" href="%2$s" target="_blank" style="margin-top: 6px;">Try it now!</a>',
-							'duplicate-content-addon-for-polylang'
-						),
-						esc_html( $plugin_info['Name'] ),
-						esc_url( $url ),
-						esc_attr( $title ),
-						esc_attr( $title )
-					);
+				
+				$notice_content = sprintf(
+						/* translators: %1$s: Plugin name, %2$s: URL to plugin information page, %3$s: Plugin title for thickbox, %4$s: Plugin title as link text */
+					__(
+					
+						'🎉 Great News! We see you are using <strong>%1$s</strong> plugin. Why not supercharge your workflow with the <a href="%2$s" class="thickbox"title="%3$s">%4$s</a>.</br> Enjoy effortless translations with just one click - saving you valuable time and energy!.</br><a class="button button-primarythickbox" href="%2$s" target="_blank" style="margin-top: 6px;">Try it now!</a>',
+						'duplicate-content-addon-for-polylang'
+					),
+					esc_html( $plugin_info['Name'] ),
+					esc_url( $url ),
+					esc_attr( $title ),
+					esc_attr( $title )
+				);
 
 					$notice_content = wp_kses(
 						$notice_content,
@@ -80,22 +83,23 @@ if ( ! class_exists( 'dupcap_notices' ) ) :
 						)
 					);
 
-					echo '<div class="notice notice-success is-dismissible" style="padding: 10px 0px 10px 10px; border-left-width: 1px;" data-url="' . esc_url( $ajax_url ) . '"data-nonce="' . esc_attr( $review_nonce ) . '">';
-					echo '<img src="' . esc_url( $logo_url ) . '" alt="' . esc_attr( $title ) . '" style="width: 76px; height: auto; vertical-align: middle; margin-right: 10px;margin-top: 6px;"><p style="display: inline-block; width: calc(100% - 95px); vertical-align: top;">';
-					echo $notice_content;
-					echo '</p></div>';
+				echo '<div class="notice notice-success is-dismissible" style="padding: 10px 0px 10px 10px; border-left-width: 1px;" data-url="' . esc_url( $ajax_url ) . '"data-nonce="' . esc_attr( $review_nonce ) . '">';
+				echo '<img src="' . esc_url( $logo_url ) . '" alt="' . esc_attr( $title ) . '" style="width: 76px; height: auto; vertical-align: middle; margin-right: 10px;margin-top: 6px;"><p style="display: inline-block; width: calc(100% - 95px); vertical-align: top;">';
+				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Content already sanitized with wp_kses() above
+				echo $notice_content;
+				echo '</p></div>';
 				}
 			}
 		}
 
 
 		public function dupcap_notice_dismiss() {
-			if ( ! check_ajax_referer( 'dupcap_atp_notice', 'nonce', false ) ) {
-				wp_send_json_error( __( 'Invalid security token sent.', 'duplicate-content-addon-for-polylang' ) );
-				wp_die( '0', 400 );
-			}
+		if ( ! check_ajax_referer( 'dupcap_atp_notice', 'nonce', false ) ) {
+			wp_send_json_error( __( 'Invalid security token sent.', 'duplicate-content-addon-for-polylang' ) );
+			wp_die( '0', 400 );
+		}
 
-			$dupcap_atp_dismiss = isset( $_POST['dupcap_atp_dismiss'] ) ? sanitize_text_field( $_POST['dupcap_atp_dismiss'] ) : false;
+		   	$dupcap_atp_dismiss = isset( $_POST['dupcap_atp_dismiss'] ) ? sanitize_text_field( wp_unslash( $_POST['dupcap_atp_dismiss'] ) ) : false;
 
 			if ( $dupcap_atp_dismiss ) {
 				update_option( 'dupcap-atp-notice', 'yes' );

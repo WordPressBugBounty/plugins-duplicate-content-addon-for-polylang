@@ -1,7 +1,11 @@
 .cool-feedback-notice-wrapper.notice.notice-info.is-dismissible {
-    padding: 5px;
-    display: inline-block;
-    width: 100%;
+    padding: 5px !important;
+    display: table;
+    width: calc(100% - 10px);
+    max-width: 870px;
+    clear: both;
+    border-radius: 5px;
+    box-sizing: border-box;
 }
 .cool-feedback-notice-wrapper .logo_container {
     width:80px;
@@ -14,10 +18,9 @@
     height:auto;
 }
 .cool-feedback-notice-wrapper .message_container {
-    width: calc(100% - 120px);
-    display: inline-block;
-    margin: 0;
-    vertical-align: top;
+    display: table-cell;
+    padding: 5px 22px 5px 5px;
+    vertical-align: middle;
 }
 .cool-feedback-notice-wrapper ul li {
     float: left;

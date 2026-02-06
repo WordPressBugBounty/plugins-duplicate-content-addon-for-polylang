@@ -35,7 +35,7 @@ class DupcapUsersFeedback {
 	function enqueue_feedback_scripts() {
 		$screen = get_current_screen();
 		if ( isset( $screen ) && $screen->id == 'plugins' ) {
-			wp_enqueue_script( __NAMESPACE__ . 'feedback-script', $this->plugin_url . 'Admin/feedback/js/admin-feedback.js', array( 'jquery' ), $this->plugin_version );
+			wp_enqueue_script( __NAMESPACE__ . 'feedback-script', $this->plugin_url . 'Admin/feedback/js/admin-feedback.js', array( 'jquery' ), $this->plugin_version, true );
 			wp_enqueue_style( 'cool-plugins-feedback-style', $this->plugin_url . 'Admin/feedback/css/admin-feedback.css', null, $this->plugin_version );
 		}
 	}
@@ -131,10 +131,10 @@ class DupcapUsersFeedback {
 			wp_die( '0', 403 );
 		}
 
-		if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), '_cool-plugins_deactivate_feedback_nonce' ) ) {
-			wp_send_json_error();
-		} else {
-			$reason             = sanitize_text_field( wp_unslash( $_POST['reason'] ) );
+	if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), '_cool-plugins_deactivate_feedback_nonce' ) ) {
+		wp_send_json_error();
+	} else {
+		$reason             = isset( $_POST['reason'] ) ? sanitize_text_field( wp_unslash( $_POST['reason'] ) ) : 'other';
 			$deactivate_reasons = array(
 				'didnt_work_as_expected'         => array(
 					'title'             => esc_html( __( 'The plugin didn\'t work as expected', 'duplicate-content-addon-for-polylang' ) ),
@@ -158,9 +158,9 @@ class DupcapUsersFeedback {
 				),
 			);
 
-			$deativation_reason = array_key_exists( $reason, $deactivate_reasons ) ? $reason : 'other';
+		$deativation_reason = array_key_exists( $reason, $deactivate_reasons ) ? $reason : 'other';
 
-			$sanitized_message = !empty($_POST['message']) ? sanitize_text_field($_POST['message']) : 'N/A';
+		$sanitized_message = !empty($_POST['message']) ? sanitize_text_field( wp_unslash( $_POST['message'] ) ) : 'N/A';
 			$admin_email       = sanitize_email( get_option( 'admin_email' ) );
 			$site_url          = esc_url( site_url() );
 			$install_date      = get_option('dupcap-installDate');
@@ -189,7 +189,7 @@ class DupcapUsersFeedback {
 				)
 			);
 
-			die( wp_send_json_success( array( 'response' => $response ) ) );
+			die( json_encode( array( 'response' => $response ) ) );
 		}
 
 	}

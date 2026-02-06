@@ -2,9 +2,9 @@
 Contributors:coolplugins, khushwantsidhu,narinder-singh,satindersingh
 Tags: Polylang, duplicate page, Automatic Translation, AI translation, Content duplication
 Requires at least:5.0
-Tested up to:6.8
+Tested up to:6.9
 Requires PHP:7.2
-Stable tag:1.2.7
+Stable tag:1.2.9
 Author URI:https://profiles.wordpress.org/khushwantsidhu/
 License:GPLv2 or later
 License URI:http://www.gnu.org/licenses/gpl-2.0.html
@@ -141,6 +141,12 @@ You can update the plugin through the WordPress dashboard like any other plugin.
 You can report security bugs through the Patchstack Vulnerability Disclosure Program. The Patchstack team help validate, triage and handle any security vulnerabilities. [Report a security vulnerability.](https://patchstack.com/database/vdp/duplicate-content-addon-for-polylang).
 
 == Changelog ==
+
+= Version 1.2.9 | 29 Jan 2026 =
+- **Fixed:** Fixed issues reported by “Plugin Check” plugin.
+
+= Version 1.2.8 | 18 Nov 2025 =
+- **Fixed:** PHP undefined array key issue.
 
 = Version 1.2.7 | 23 Aug 2025 =
 - **Fixed:** Admin folder path issue.
