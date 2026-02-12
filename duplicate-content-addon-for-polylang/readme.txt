@@ -4,7 +4,7 @@ Tags: Polylang, duplicate page, Automatic Translation, AI translation, Content d
 Requires at least:5.0
 Tested up to:6.9.1
 Requires PHP:7.2
-Stable tag:2.0.0
+Stable tag:2.0.1
 Author URI:https://profiles.wordpress.org/khushwantsidhu/
 License:GPLv2 or later
 License URI:http://www.gnu.org/licenses/gpl-2.0.html
@@ -53,6 +53,8 @@ https://youtu.be/ecHsOyIL_J4
 * **[LocoAI – Auto Translate for Loco Translate](https://locoaddon.com/?utm_source=pdca_plugin&utm_medium=readme&utm_campaign=get_pro&utm_content=atlt_check_out)** is an addon that enhances the functionality of the Loco Translate plugin by enabling the automatic translation of WordPress themes and plugins. This addon connects with sources like Google, Yandex, DeepL, or AI-powered sources like ChatGPT, Gemini AI, and Chrome AI to provide instant and automated translations.
 
 * **[AI Translation for TranslatePress](https://coolplugins.net/product/automatic-translate-addon-for-translatepress-pro/?utm_source=pdca_plugin&utm_medium=readme&utm_campaign=get_pro&utm_content=tpa_check_out)** is a powerful addon that enhances the functionality of the TranslatePress plugin. This addon uses advanced translation services, like Google Translate, Yandex, and Chrome AI translator, to provide accurate and instant translations for your web pages automatically.
+
+**Use of 3rd Party Services:** This plugin connects to the Cool Plugins feedback server only for optional usage data sharing and voluntary feedback submission (for example, during plugin deactivation). Data is transmitted solely after explicit user consent. No hidden tracking is performed, and no frontend visitor or site user data is collected.  For more details, please review our [Data Usage Policy](https://my.coolplugins.net/terms/usage-tracking/), [TOS](https://my.coolplugins.net/terms/), and [Privacy Policy](https://my.coolplugins.net/terms/privacy-policy/).
 
 > This plugin is not developed by or affiliated with the "**Polylang developers**". It is a third-party addon that provides duplicate content functionality to quickly translate your post with the same styles into other languages.
 
@@ -141,6 +143,9 @@ You can update the plugin through the WordPress dashboard like any other plugin.
 You can report security bugs through the Patchstack Vulnerability Disclosure Program. The Patchstack team help validate, triage and handle any security vulnerabilities. [Report a security vulnerability.](https://patchstack.com/database/vdp/duplicate-content-addon-for-polylang).
 
 == Changelog ==
+
+= Version 2.0.1 | 12 Feb 2026 =
+- **Updated:** Textual Changes.
 
 = Version 2.0.0 | 06 Feb 2026 =
 - **Improvements:** Enhanced UI for both Classic Editor and Gutenberg blocks.

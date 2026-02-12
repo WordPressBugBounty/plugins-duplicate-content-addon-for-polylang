@@ -260,6 +260,14 @@ class Dupcap_Marketing_Popup {
         
         // If explicitly a duplication task, do checks. If generic list page, skip content checks.
         if ($is_duplicate_task) {
+            // Check if the original post is an Elementor page
+            if ( $from_post_id > 0 ) {
+                $is_elementor = get_post_meta( $from_post_id, '_elementor_edit_mode', true );
+                if ( $is_elementor === 'builder' ) {
+                    return;
+                }
+            }
+            
             // Hide if content is already present (e.g. after duplication)
             if ( $post && ! empty( $post->post_content ) ) {
                 return;
