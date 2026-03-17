@@ -330,3 +330,12 @@
 #dupcap-marketing-modal {
     display: none;
 }
+
+.dupcap-main-section .ducap-override-waring{
+    color: #dc2626;
+    font-weight: 500;
+}
+.dupcap-main-section .ducap-override-waring {
+    color: #dc2626;
+    font-weight: 500;
+}

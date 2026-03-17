@@ -239,6 +239,65 @@ class Dupcap_Marketing_Popup {
 
 
     /**
+     * Determines the optimal source post ID based on translation relationships and navigation context.
+     * 
+     * @param WP_Post $post Current post object
+     * @return int The ID of the translation source, or 0 if none found
+     */
+    private function dupcap_get_from_post_id_from_context( $post ) {
+        if ( ! function_exists('pll_get_post_translations') || ! function_exists('pll_default_language') || ! function_exists('pll_get_post_language') ) {
+            return 0;
+        }
+
+        $translations = pll_get_post_translations( $post->ID );
+        if ( empty( $translations ) || ! is_array( $translations ) ) {
+            return 0;
+        }
+
+        $current_lang = pll_get_post_language( $post->ID, 'slug' );
+        $default_lang = pll_default_language( 'slug' );
+        
+        $potential_from_post = 0;
+
+        // 1. Check if user navigated directly from editing a related translation
+        //    (e.g. they were on 'hi' translation and clicked to edit 'fr')
+        $referer = wp_get_raw_referer();
+        if ( $referer ) {
+            $parsed = wp_parse_url( $referer );
+            if ( ! empty( $parsed['query'] ) ) {
+                parse_str( $parsed['query'], $query_vars );
+                if ( ! empty( $query_vars['post'] ) && ! empty( $query_vars['action'] ) && $query_vars['action'] === 'edit' ) {
+                    $referer_post_id = intval( $query_vars['post'] );
+                    if ( in_array( $referer_post_id, $translations ) && $referer_post_id != $post->ID ) {
+                        $referer_post = get_post( $referer_post_id );
+                        if ( $referer_post && $referer_post->post_type === $post->post_type ) {
+                            $potential_from_post = $referer_post_id;
+                        }
+                    }
+                }
+            }
+        }
+
+        // 2. Fallback to default language
+        if ( $potential_from_post === 0 && $current_lang !== $default_lang && ! empty( $translations[ $default_lang ] ) ) {
+            $potential_from_post = $translations[ $default_lang ];
+        }
+
+        // 3. Fallback to any available translation
+        if ( $potential_from_post === 0 ) {
+            foreach ( $translations as $lang => $tr_id ) {
+                if ( $lang !== $current_lang && $tr_id != $post->ID ) {
+                    $potential_from_post = $tr_id;
+                    break;
+                }
+            }
+        }
+
+        return $potential_from_post;
+    }
+
+
+    /**
      * Output the marketing modal in the admin footer.
      */
     public function dupcap_output_modal_in_footer() {
@@ -257,6 +316,14 @@ class Dupcap_Marketing_Popup {
 
         // Get the current post
         $post = get_post();
+
+        global $pagenow;
+        if ( ! $is_duplicate_task && $post && $pagenow === 'post.php' && function_exists('pll_get_post_translations') && function_exists('pll_default_language') ) {
+            $from_post_id = $this->dupcap_get_from_post_id_from_context($post);
+            if ( $from_post_id > 0 ) {
+                $is_duplicate_task = true;
+            }
+        }
         
         // If explicitly a duplication task, do checks. If generic list page, skip content checks.
         if ($is_duplicate_task) {
@@ -268,10 +335,6 @@ class Dupcap_Marketing_Popup {
                 }
             }
             
-            // Hide if content is already present (e.g. after duplication)
-            if ( $post && ! empty( $post->post_content ) ) {
-                return;
-            }
             // phpcs:ignore WordPress.Security.NonceVerification.Recommended
             if ( isset($_GET['copy_content']) && $_GET['copy_content'] === 'true' ) {
                 return;
@@ -280,11 +343,6 @@ class Dupcap_Marketing_Popup {
         
         // phpcs:ignore WordPress.Security.NonceVerification.Recommended
         $is_post_updated = ! empty( $_GET['message'] );
-        
-        // If post was just updated and has content, don't show the modal
-        if ( $is_post_updated && $post && ! empty( $post->post_content ) ) {
-            return;
-        }
         
         $original_lang = false;
         if ( $from_post_id > 0 && function_exists('pll_get_post_language') ) {
@@ -310,20 +368,30 @@ class Dupcap_Marketing_Popup {
         // phpcs:ignore WordPress.Security.NonceVerification.Recommended
         $has_from_post = ! empty( $_GET['from_post'] );
 
-        $should_show_trigger = $has_from_post && ! $has_content && ! $is_copy_action;
+        $should_show_trigger = ( $from_post_id > 0 ) && ! $is_copy_action;
 
         $is_plugin_installed = defined( 'ATFP_V' ) || defined( 'ATFPP_V' );
 
         // Auto Open ONLY if: Trigger is shown AND Plugin NOT installed AND Post NOT just updated AND is post-new.php
         global $pagenow;
-        $should_auto_open = $should_show_trigger && ! $is_plugin_installed && ! $is_post_updated && ( $pagenow === 'post-new.php' );
+        $should_auto_open = $should_show_trigger && ! $has_content && ! $is_plugin_installed && ! $is_post_updated && ( $pagenow === 'post-new.php' );
 		$logo_url = DUPCAP_URL . 'assets/images/dupcap-icon.svg';
+        
+        $new_lang_slug = '';
+        if ( function_exists('pll_get_post_language') ) {
+            $new_lang_slug = pll_get_post_language( $post->ID, 'slug' );
+        }
+        
         wp_localize_script( 'dupcap-marketing-js', 'dupcapMarketing', array(
 			'autoOpen' => $should_auto_open,
             'showTrigger' => $should_show_trigger,
             'logoUrl'  => $logo_url,
             'tooltipText' => __('Duplicate Content', 'duplicate-content-addon-for-polylang'),
-            'postType' => isset( $screen->post_type ) ? $screen->post_type : ''
+            'postType' => isset( $screen->post_type ) ? $screen->post_type : '',
+            'fromPost' => $from_post_id,
+            'newLang'  => $new_lang_slug,
+            'isPostEdit' => ( $pagenow === 'post.php' ),
+            'replaceNonce' => wp_create_nonce( 'dupcap_replace_content' )
 		) );
 
 
@@ -360,6 +428,13 @@ class Dupcap_Marketing_Popup {
                             <?php /* translators: %s: Copy from */ ?>
                             <?php printf( esc_html__( 'Copy from %s', 'duplicate-content-addon-for-polylang' ), esc_html(   $original_lang ) ); ?>
                         </button>
+                        <?php if ( $has_content ) : ?>
+                            <p class="dupcap-copy-replace-notice ducap-override-waring">
+                                <span class="dashicons dashicons-warning" aria-hidden="true"></span>
+                                <?php /* translators: %s: Source language name */ ?>
+                                <?php printf( esc_html__( 'Your current content will be replaced with the %s version.', 'duplicate-content-addon-for-polylang' ), esc_html( $original_lang ) ); ?>
+                            </p>
+                        <?php endif; ?>
 					</div>
                     <?php endif; ?>
 					

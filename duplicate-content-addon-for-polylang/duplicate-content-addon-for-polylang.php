@@ -2,7 +2,7 @@
 /*
 Plugin Name: Duplicate Content Addon For Polylang
 Plugin URI: https://wordpress.org/plugins/duplicate-content-addon-for-polylang/
-Version: 2.0.1
+Version: 2.0.2
 Author: Khushwant Singh
 Author URI: https://profiles.wordpress.org/khushwantsidhu/
 Description: Duplicate content addon for Polylang to copy content from one language post to other language post for easy and quick translation.
@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 if ( ! defined( 'DUPCAP_VERSION' ) ) {
-	define( 'DUPCAP_VERSION', '2.0.1' );
+	define( 'DUPCAP_VERSION', '2.0.2' );
 }
 
 if ( ! defined( 'DUPCAP_DIR_PATH' ) ) {
@@ -153,7 +153,10 @@ if ( ! class_exists( 'duplicateContentAddon' ) ) {
 				 */
 				function dupcap_TitleContent() {
 
-					if ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'new-post-translation' ) && $GLOBALS['pagenow'] == 'post-new.php' && isset( $_GET['from_post'], $_GET['new_lang'], $_GET['copy_content'] ) ) {
+					$is_new_post_copy = ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'new-post-translation' ) && $GLOBALS['pagenow'] === 'post-new.php' && isset( $_GET['from_post'], $_GET['new_lang'], $_GET['copy_content'] ) );
+					$is_existing_post_replace = ( isset( $_GET['_dupcap_nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_dupcap_nonce'] ) ), 'dupcap_replace_content' ) && $GLOBALS['pagenow'] === 'post.php' && isset( $_GET['from_post'], $_GET['new_lang'], $_GET['copy_content'], $_GET['replace_content'] ) );
+
+					if ( $is_new_post_copy || $is_existing_post_replace ) {
 
 						$from_post_id = absint( sanitize_text_field( wp_unslash( $_GET['from_post'] ) ) );
 
@@ -175,7 +178,7 @@ if ( ! class_exists( 'duplicateContentAddon' ) ) {
 							return;
 						}
 
-						if ( ! empty( $post->post_content ) ) {
+						if ( ! empty( $post->post_content ) && empty( $_GET['replace_content'] ) ) {
 							return;
 						}
 
@@ -212,6 +215,8 @@ if ( ! class_exists( 'duplicateContentAddon' ) ) {
 							$new_title      .= ' (' . $new_lang_slug . ' translation)';
 							$current_user    = wp_get_current_user();
 							$new_post_author = $current_user->ID;
+							$post_status     = isset( $_GET['replace_content'] ) && $_GET['replace_content'] ? $post->post_status : 'draft';
+							
 							$args            = array(
 								'ID'             => $new_post_id,
 								'comment_status' => $orginal_post->comment_status,
@@ -221,7 +226,7 @@ if ( ! class_exists( 'duplicateContentAddon' ) ) {
 								'post_excerpt'   => $orginal_post->post_excerpt,
 								'post_parent'    => $orginal_post->post_parent,
 								'post_password'  => $orginal_post->post_password,
-								'post_status'    => 'draft',
+								'post_status'    => $post_status,
 								'post_title'     => $new_title,
 								'post_type'      => $post->post_type,
 								'to_ping'        => $post->to_ping,

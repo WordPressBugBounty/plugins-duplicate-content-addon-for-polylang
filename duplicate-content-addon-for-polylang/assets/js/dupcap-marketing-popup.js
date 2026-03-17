@@ -133,15 +133,15 @@ class DupcapMarketingPopup {
      * Check if the modal should automatically open
      */
     checkAutoOpen() {
-            if (!this.config.autoOpen) return;
+        if (!this.config.autoOpen) return;
 
-            const $modal = this.$(this.selectors.modal);
+        const $modal = this.$(this.selectors.modal);
 
-            $modal.hide();
+        $modal.hide();
 
-            $modal.css('display', 'flex');     
-            
-            this.openModal();  
+        $modal.css('display', 'flex');
+
+        this.openModal();
     }
 
 
@@ -262,6 +262,20 @@ class DupcapMarketingPopup {
 
         const urlParams = new URLSearchParams(window.location.search);
         urlParams.set('copy_content', '1');
+
+        if (this.config && this.config.isPostEdit) {
+            urlParams.set('replace_content', '1');
+            if (this.config.fromPost) {
+                urlParams.set('from_post', this.config.fromPost);
+            }
+            if (this.config.newLang) {
+                urlParams.set('new_lang', this.config.newLang);
+            }
+            if (this.config.replaceNonce) {
+                urlParams.set('_dupcap_nonce', this.config.replaceNonce);
+            }
+        }
+
         window.location.href = window.location.pathname + '?' + urlParams.toString();
     }
 
@@ -283,7 +297,7 @@ class DupcapMarketingPopup {
                 dupcap_atp_dismiss: true,
                 nonce: nonce,
             },
-            error: function(xhr) {
+            error: function (xhr) {
                 // Silently fail - user can still use the plugin
                 // Avoid logging sensitive information to console
             }
