@@ -2,9 +2,9 @@
 Contributors:khushwantsidhu
 Tags: Polylang, duplicate page, Automatic Translation, AI translation, Content duplication
 Requires at least:5.0
-Tested up to:6.9
+Tested up to:7.0
 Requires PHP:7.2
-Stable tag:2.0.2
+Stable tag:2.0.3
 Author URI:https://profiles.wordpress.org/khushwantsidhu/
 License:GPLv2 or later
 License URI:http://www.gnu.org/licenses/gpl-2.0.html
@@ -144,6 +144,10 @@ You can report security bugs through the Patchstack Vulnerability Disclosure Pro
 
 == Changelog ==
 
+= Version 2.0.3 | 26 May 2026 =
+- **Fixed:** Resolved Gutenberg content sync issue for translated posts.
+- **Tested Up to:** Tested up to WordPress 7.0
+
 = Version 2.0.2 | 17 Mar 2026 =
 - **Fixed:** Fixed issues reported by “Plugin Check” plugin.
 - **Added:** Added support to copy content from existing pages.
@@ -202,7 +206,6 @@ You can report security bugs through the Patchstack Vulnerability Disclosure Pro
 - **New:** Initial Plugin Release
 
 == Upgrade Notice ==
-= Version 1.2.6 | 22 Aug 2025 =
-- **Fixed:** Security issues.
-- **Improved:** Feedback Notice.
-- **Improved:** Hide the Automatic Translate button if AutoPoly – AI Translation For Polylang is installed.
+= Version 2.0.3 | 26 May 2026 =
+- **Fixed:** Resolved Gutenberg content sync issue for translated posts.
+- **Tested Up to:** Tested up to WordPress 7.0

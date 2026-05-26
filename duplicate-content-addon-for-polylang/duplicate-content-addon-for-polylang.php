@@ -2,7 +2,7 @@
 /*
 Plugin Name: Duplicate Content Addon For Polylang
 Plugin URI: https://wordpress.org/plugins/duplicate-content-addon-for-polylang/
-Version: 2.0.2
+Version: 2.0.3
 Author: Khushwant Singh
 Author URI: https://profiles.wordpress.org/khushwantsidhu/
 Description: Duplicate content addon for Polylang to copy content from one language post to other language post for easy and quick translation.
@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 if ( ! defined( 'DUPCAP_VERSION' ) ) {
-	define( 'DUPCAP_VERSION', '2.0.2' );
+	define( 'DUPCAP_VERSION', '2.0.3' );
 }
 
 if ( ! defined( 'DUPCAP_DIR_PATH' ) ) {
@@ -68,7 +68,6 @@ if ( ! class_exists( 'duplicateContentAddon' ) ) {
 				add_action( 'admin_init', array( $this, 'admin_notice' ) );
 				register_activation_hook( DUPCAP_FILE, array( 'duplicateContentAddon', 'dupcap_activate' ) );
 				register_deactivation_hook( DUPCAP_FILE, array( 'duplicateContentAddon', 'dupcap_deactivate' ) );
-				
 				add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), array( $this, 'dupcap_plugin_action_links' ) );
 			}
 
@@ -109,35 +108,34 @@ if ( ! class_exists( 'duplicateContentAddon' ) ) {
 			function dupcap_plugin_required_admin_notice() {
 
 				if ( current_user_can( 'activate_plugins' ) ) {
-					$url         = 'plugin-install.php?tab=plugin-information&plugin=polylang&TB_iframe=true';
-					$title       = 'Polylang';
-				$plugin_info = get_plugin_data( __FILE__, true, true );
-				echo '<div class="error"><p>' .
-				wp_kses_post(
-					sprintf(
-						/* translators: 1: Current plugin name, 2: Polylang plugin install URL, 3: Polylang plugin title attribute, 4: Polylang plugin name */
-						__(
-							'In order to use <strong>%1$s</strong> plugin, please install and activate the latest version  of <a href="%2$s" class="thickbox" title="%3$s">%4$s</a>',
-							'duplicate-content-addon-for-polylang'
-						),
-						esc_html( $plugin_info['Name'] ),
-						esc_url( $url ),
-						esc_attr( $title ),
-						esc_attr( $title )
-					)
-				) . '.</p></div>';
+						$url         = 'plugin-install.php?tab=plugin-information&plugin=polylang&TB_iframe=true';
+						$title       = 'Polylang';
+						$plugin_info = get_plugin_data( __FILE__, true, true );
+						echo '<div class="error"><p>' .
+						wp_kses_post(
+							sprintf(
+							/* translators: 1: Current plugin name, 2: Polylang plugin install URL, 3: Polylang plugin title attribute, 4: Polylang plugin name */
+							__(
+								'In order to use <strong>%1$s</strong> plugin, please install and activate the latest version  of <a href="%2$s" class="thickbox" title="%3$s">%4$s</a>',
+								'duplicate-content-addon-for-polylang'
+							),
+							esc_html( $plugin_info['Name'] ),
+							esc_url( $url ),
+							esc_attr( $title ),
+							esc_attr( $title )
+							)
+						) . '.</p></div>';
 
-						if ( function_exists( 'deactivate_plugins' ) ) {
-							deactivate_plugins( __FILE__ );
-						}
-					}
+							if ( function_exists( 'deactivate_plugins' ) ) {
+								deactivate_plugins( __FILE__ );
+							}
+				}
 			}
 
 			public function dupcap_plugin_action_links($links) {
-				
-				if ( ! defined( 'ATFPP_V' ) ){
-					$links[] = '<a href="https://coolplugins.net/product/autopoly-ai-translation-for-polylang/?utm_source=pdca_plugin&utm_medium=inside&utm_campaign=view_plugin&utm_content=plugins_list" target="_blank" style="font-weight:bold; color:#852636;">' . __( 'AI Translation', 'duplicate-content-addon-for-polylang' ) . '</a>';
 					
+				if ( ! defined( 'ATFPP_V' ) ){
+					$links[] = '<a href="https://coolplugins.net/product/autopoly-ai-translation-for-polylang/?utm_source=pdca_plugin&utm_medium=inside&utm_campaign=view_plugin&utm_content=plugins_list" target="_blank" style="font-weight:bold; color:#852636;">' . __( 'AI Translation', 'duplicate-content-addon-for-polylang' ) . '</a>';		
 				}
 				return $links;
 			}
@@ -148,10 +146,10 @@ if ( ! class_exists( 'duplicateContentAddon' ) ) {
 			}
 
 
-				/**
-				 * Copy Post/Page Title and content
-				 */
-				function dupcap_TitleContent() {
+			/**
+			 * Copy Post/Page Title and content
+			 */
+			function dupcap_TitleContent() {
 
 					$is_new_post_copy = ( isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'new-post-translation' ) && $GLOBALS['pagenow'] === 'post-new.php' && isset( $_GET['from_post'], $_GET['new_lang'], $_GET['copy_content'] ) );
 					$is_existing_post_replace = ( isset( $_GET['_dupcap_nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_dupcap_nonce'] ) ), 'dupcap_replace_content' ) && $GLOBALS['pagenow'] === 'post.php' && isset( $_GET['from_post'], $_GET['new_lang'], $_GET['copy_content'], $_GET['replace_content'] ) );
@@ -203,8 +201,6 @@ if ( ! class_exists( 'duplicateContentAddon' ) ) {
 							return; // safety fallback
 						}
 
-						// $new_lang = PLL()->model->get_language(filter_var($_GET['new_lang'], FILTER_SANITIZE_STRING));
-
 						$from_post_obj = get_post( $from_post_id );
 
 						if ( has_blocks( $from_post_obj->ID ) ) {
@@ -212,12 +208,13 @@ if ( ! class_exists( 'duplicateContentAddon' ) ) {
 							$orginal_post    = get_post( $from_post_obj->ID );
 							$new_title       = $orginal_post->post_title;
 							$new_lang_slug   = $new_lang->slug;
-							$new_title      .= ' (' . $new_lang_slug . ' translation)';
+							$new_title .= ' (' . $new_lang_slug . ' translation)';
 							$current_user    = wp_get_current_user();
 							$new_post_author = $current_user->ID;
-							$post_status     = isset( $_GET['replace_content'] ) && $_GET['replace_content'] ? $post->post_status : 'draft';
+							$replace_content  = isset( $_GET['replace_content'] ) ? sanitize_text_field( wp_unslash( $_GET['replace_content'] ) ) : '';
+							$post_status      = $replace_content ? $post->post_status : 'draft';
 							
-							$args            = array(
+							$args = array(
 								'ID'             => $new_post_id,
 								'comment_status' => $orginal_post->comment_status,
 								'ping_status'    => $orginal_post->ping_status,
@@ -232,120 +229,129 @@ if ( ! class_exists( 'duplicateContentAddon' ) ) {
 								'to_ping'        => $post->to_ping,
 								'menu_order'     => $post->menu_order,
 							);
+						
+							wp_update_post( $args );
 
-						wp_update_post( $args );
-                        
-                        // IMPORTANT: Update global object so Classic Editor sees the new content immediately
-                        $post->post_content = $orginal_post->post_content;
-                        $post->post_title   = $new_title;
+								// IMPORTANT
+								PLL()->model->post->set_language( $new_post_id, $new_lang_slug );
 
-						// Get the post meta from the source post
+								$translations = PLL()->model->post->get_translations( $from_post_id );
 
-						$this->dupcap_copy_post_meta( $post, $from_post_id );
+								$translations[ $new_lang_slug ] = $new_post_id;
 
-						// Flush rewrite rules to avoid 404 errors on the new post
-						flush_rewrite_rules( false );
+								PLL()->model->post->save_translations( $new_post_id, $translations );
 
+								// Copy meta/media
+								$this->dupcap_copy_post_meta( $post, $from_post_id );
+
+
+								clean_post_cache( $new_post_id );
+
+								wp_safe_redirect(
+									admin_url(
+										'post.php?post=' . $new_post_id . '&action=edit&message=1'
+									)
+								);
+								exit;
 						} else {
 
-							// create copy of Post/Page content
-							add_filter( 'dupcap_post_content', array( &$this, 'dupcap_post_content' ), 10, 3 );
-							$filtered_content   = apply_filters( 'dupcap_post_content', $from_post_obj->post_content, $post, $new_lang->slug );
+								// create copy of Post/Page content
+								add_filter( 'dupcap_post_content', array( &$this, 'dupcap_post_content' ), 10, 3 );
+								$filtered_content   = apply_filters( 'dupcap_post_content', $from_post_obj->post_content, $post, $new_lang->slug );
 
-							// create copy of Post/Page title
-							add_filter( 'dupcap_post_title', array( &$this, 'dupcap_filter_title' ), 10, 2 );
-							$filtered_title   = apply_filters( 'dupcap_post_title', $from_post_obj->post_title, $new_lang->slug );
-							
-							// Update global post object for display in editor
-							$post->post_content = $filtered_content;
-							$post->post_title   = $filtered_title;
+								// create copy of Post/Page title
+								add_filter( 'dupcap_post_title', array( &$this, 'dupcap_filter_title' ), 10, 2 );
+								$filtered_title   = apply_filters( 'dupcap_post_title', $from_post_obj->post_title, $new_lang->slug );
+	
+								// Update global post object for display in editor
+								$post->post_content = $filtered_content;
+								$post->post_title   = $filtered_title;
 
-							// This function is used to copy all images of Post/Page
-							$this->dupcap_post_media( $post, $from_post_id, $new_lang->slug );
+								// This function is used to copy all images of Post/Page
+								$this->dupcap_post_media( $post, $from_post_id, $new_lang->slug );
 
-							// This function is used to copy featured image
-							$this->dupcap_featured_image( $post, $from_post_id, $new_lang->slug );
+								// This function is used to copy featured image
+								$this->dupcap_featured_image( $post, $from_post_id, $new_lang->slug );
 
-						// copy post meta data
-						$this->dupcap_copy_post_meta( $post, $from_post_id );
+							// copy post meta data
+							$this->dupcap_copy_post_meta( $post, $from_post_id );
 
-						// Flush rewrite rules to avoid 404 errors on the new post
-						flush_rewrite_rules( false );
+							// Flush rewrite rules to avoid 404 errors on the new post
+							flush_rewrite_rules( false );
 
-						add_action(
-						'admin_notices',
-						function() {
-								// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Nonce is verified in dupcap_shortcode_metabox() before this callback is added
-								$from_post_id = isset($_GET['from_post']) ? absint($_GET['from_post']) : 0;
-									?>
-						<div class="notice notice-success is-dismissible">
-						<p>
-						<b><?php echo esc_html__( 'Copied', 'duplicate-content-addon-for-polylang' ); ?>:</b>
-						<?php
-						printf(
-							/* translators: 1: Original post title, 2: Source language name */
-							esc_html__( 'The title and content were successfully copied from "%1$s" (in %2$s).', 'duplicate-content-addon-for-polylang' ),
-							esc_html( get_post( $from_post_id )->post_title ),
-							esc_html( pll_get_post_language( $from_post_id, 'name' ) )
-							);
-							?>
-						</p>
-					</div>
-									<?php
-								}
-							);
+							add_action(
+							'admin_notices',
+							function() {
+									// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Nonce is verified in dupcap_shortcode_metabox() before this callback is added
+									$from_post_id = isset($_GET['from_post']) ? absint($_GET['from_post']) : 0;
+										?>
+							<div class="notice notice-success is-dismissible">
+							<p>
+							<b><?php echo esc_html__( 'Copied', 'duplicate-content-addon-for-polylang' ); ?>:</b>
+							<?php
+							printf(
+								/* translators: 1: Original post title, 2: Source language name */
+								esc_html__( 'The title and content were successfully copied from "%1$s" (in %2$s).', 'duplicate-content-addon-for-polylang' ),
+								esc_html( get_post( $from_post_id )->post_title ),
+								esc_html( pll_get_post_language( $from_post_id, 'name' ) )
+								);
+								?>
+							</p>
+							</div>
+										<?php
+									}
+								);
 						}
 					}
-				}
+			}
 
-				/**
-				 * Functions used to copy post meta data
-				 */
-				function dupcap_copy_post_meta( $post, $from_post_id ) {
-					$new_post_id = $post->ID;
-					$meta_value  = get_post_meta( $from_post_id );
-					foreach ( $meta_value as $key => $value ) {
-						if ( substr( $key, 0, 1 ) != '_' ) {
-							update_post_meta( $new_post_id, $key, $value[0] );
-						}
+			/**
+			 * Functions used to copy post meta data
+			 */
+			function dupcap_copy_post_meta( $post, $from_post_id ) {
+				$new_post_id = $post->ID;
+				$meta_value  = get_post_meta( $from_post_id );
+				foreach ( $meta_value as $key => $value ) {
+					if ( substr( $key, 0, 1 ) != '_' ) {
+						update_post_meta( $new_post_id, $key, $value[0] );
 					}
 				}
-				/**
-				 * Functions used to filter content
-				 */
+			}
+			/**
+			 * Functions used to filter content
+			 */
+			function dupcap_post_content( $content, $post, $new_lang_slug ) {
 
-				function dupcap_post_content( $content, $post, $new_lang_slug ) {
+				if ( PLL()->model->options['media_support'] ) {
+					add_filter( 'dupcap_post_content_filter', array( &$this, 'dupcap_rename_content_images' ), 10, 3 );
+					add_filter( 'dupcap_post_content_filter', array( &$this, 'dupcap_rename_post_captions' ), 10, 3 );
+					add_filter( 'dupcap_post_content_filter', array( &$this, 'dupcap_rename_gallery' ), 10, 3 );
+					$content = apply_filters( 'dupcap_post_content_filter', $content, $post, $new_lang_slug );
+				}
 
-					if ( PLL()->model->options['media_support'] ) {
-						add_filter( 'dupcap_post_content_filter', array( &$this, 'dupcap_rename_content_images' ), 10, 3 );
-						add_filter( 'dupcap_post_content_filter', array( &$this, 'dupcap_rename_post_captions' ), 10, 3 );
-						add_filter( 'dupcap_post_content_filter', array( &$this, 'dupcap_rename_gallery' ), 10, 3 );
-						$content = apply_filters( 'dupcap_post_content_filter', $content, $post, $new_lang_slug );
-					}
+				return $content;
 
+			}
+
+			/**
+			 * rename image's classes, tags...
+			 */
+
+			function dupcap_rename_content_images( $content, $post, $new_lang_slug ) {
+
+				preg_match_all( '/<img[^>]+>/i', $content, $img_array );
+
+				if ( empty( $img_array ) ) {
 					return $content;
-
 				}
 
-				/**
-				 * rename image's classes, tags...
-				 */
+				// create array
+				$img_and_meta = array();
+				for ( $i = 0; $i < count( $img_array[0] ); $i++ ) {
+				$img_and_meta[ $i ] = array( 'tag' => $img_array[0][ $i ] );
+				}
 
-				function dupcap_rename_content_images( $content, $post, $new_lang_slug ) {
-
-					preg_match_all( '/<img[^>]+>/i', $content, $img_array );
-
-					if ( empty( $img_array ) ) {
-						return $content;
-					}
-
-					// create array
-					$img_and_meta = array();
-					for ( $i = 0; $i < count( $img_array[0] ); $i++ ) {
-						$img_and_meta[ $i ] = array( 'tag' => $img_array[0][ $i ] );
-					}
-
-					foreach ( $img_and_meta as $i => $arr ) {
+				foreach ( $img_and_meta as $i => $arr ) {
 
 						// create array of classes
 						preg_match( '/ class="([^"]*)"/i', $img_array[0][ $i ], $class_temp );
@@ -419,17 +425,17 @@ if ( ! class_exists( 'duplicateContentAddon' ) ) {
 								$content         = str_replace( $comment_tag, $new_comment_tag, $content );
 							}
 						}
-					}
-
-					return $content;
-
 				}
 
-				/**
-				 * Rename caption shortcodes in content
-				 */
+				return $content;
 
-				function dupcap_rename_post_captions( $content, $post, $new_lang_slug ) {
+			}
+
+			/**
+			 * Rename caption shortcodes in content
+			 */
+
+			function dupcap_rename_post_captions( $content, $post, $new_lang_slug ) {
 
 					preg_match_all( '/\[caption(.*?)\](.*?)\[\/caption\]/i', $content, $caption_array );
 
@@ -500,26 +506,26 @@ if ( ! class_exists( 'duplicateContentAddon' ) ) {
 
 					return $content;
 
+			}
+
+			/**
+			 * Replace gallery shortcodes
+			 */
+
+			function dupcap_rename_gallery( $content, $post, $new_lang_slug ) {
+
+				preg_match_all( '/\[gallery (.*?)\]/i', $content, $gallery_array );
+
+				if ( empty( $gallery_array ) ) {
+						return $content;
 				}
 
-				/**
-				 * Replace gallery shortcodes
-				 */
-
-				function dupcap_rename_gallery( $content, $post, $new_lang_slug ) {
-
-					preg_match_all( '/\[gallery (.*?)\]/i', $content, $gallery_array );
-
-					if ( empty( $gallery_array ) ) {
-						return $content;
-					}
-
-					$gallery_and_meta = array();
-					for ( $i = 0; $i < count( $gallery_array[0] ); $i++ ) {
+				$gallery_and_meta = array();
+				for ( $i = 0; $i < count( $gallery_array[0] ); $i++ ) {
 						$gallery_and_meta[ $i ] = array( 'shortcode' => $gallery_array[0][ $i ] );
-					}
+				}
 
-					foreach ( $gallery_and_meta as $i => $arr ) {
+				foreach ( $gallery_and_meta as $i => $arr ) {
 
 						preg_match( '/ ids="([^"]*)"/i', $gallery_and_meta[ $i ]['shortcode'], $ids_temp );
 						$gallery_and_meta[ $i ]['ids'] = ! empty( $ids_temp ) ? $ids_temp[1] : '';
@@ -543,12 +549,12 @@ if ( ! class_exists( 'duplicateContentAddon' ) ) {
 						// replace galleries in content
 						$content = str_replace( $gallery_and_meta[ $i ]['shortcode'], $gallery_and_meta[ $i ]['shortcode_new'], $content );
 
-					}
+				}
 
 					// find and replace HTML comments
-					preg_match_all( '/<!-- wp:gallery {[^>]+} -->/i', $content, $comment_array );
+				preg_match_all( '/<!-- wp:gallery {[^>]+} -->/i', $content, $comment_array );
 
-					if ( ! empty( $comment_array ) ) {
+				if ( ! empty( $comment_array ) ) {
 						for ( $j = 0; $j < count( $comment_array[0] ); $j++ ) {
 
 							$comment_tag = $comment_array[0][ $j ];
@@ -568,41 +574,41 @@ if ( ! class_exists( 'duplicateContentAddon' ) ) {
 								$content         = str_replace( $comment_tag, $new_comment_tag, $content );
 							}
 						}
-					}
-
-					return $content;
-
 				}
 
-				/**
-				 * this function is used to filter title
-				 */
+				return $content;
 
-				function dupcap_filter_title( $title, $new_lang_slug ) {
-					return $title .= '(' . $new_lang_slug . ' translation)';
-				}
+			}
 
-				/**
-				 * Duplicate featured image
-				 */
+			/**
+			 * this function is used to filter title
+			 */
 
-				function dupcap_featured_image( $post, $from_post_id, $new_lang_slug ) {
-					if ( has_post_thumbnail( $from_post_id ) ) {
-						$post_thumbnail_id = get_post_thumbnail_id( $from_post_id );
-						if ( PLL()->model->options['media_support'] ) {
-							$post_thumbnail_id = $this->dupcap_translate_attachment( $post_thumbnail_id, $new_lang_slug, $post->ID );
-						}
-						set_post_thumbnail( $post, $post_thumbnail_id );
-					}
-				}
+			function dupcap_filter_title( $title, $new_lang_slug ) {
+				return $title .= '(' . $new_lang_slug . ' translation)';
+			}
 
-				/**
-				 * this function is used to Copy all attached media
-				 */
+			/**
+			 * Duplicate featured image
+			 */
 
-				function dupcap_post_media( $post, $from_post_id, $new_lang_slug ) {
-
+			function dupcap_featured_image( $post, $from_post_id, $new_lang_slug ) {
+				if ( has_post_thumbnail( $from_post_id ) ) {
+					$post_thumbnail_id = get_post_thumbnail_id( $from_post_id );
 					if ( PLL()->model->options['media_support'] ) {
+						$post_thumbnail_id = $this->dupcap_translate_attachment( $post_thumbnail_id, $new_lang_slug, $post->ID );
+					}
+					set_post_thumbnail( $post, $post_thumbnail_id );
+				}
+			}
+
+			/**
+			 * this function is used to Copy all attached media
+			 */
+
+			function dupcap_post_media( $post, $from_post_id, $new_lang_slug ) {
+
+				if ( PLL()->model->options['media_support'] ) {
 
 						$from_lang   = pll_get_post_language( $from_post_id, 'slug' );
 						$args        = array(
@@ -620,14 +626,14 @@ if ( ! class_exists( 'duplicateContentAddon' ) ) {
 						$this->dupcap_translate_attachment( get_the_ID(), $new_lang_slug, $post->ID );
 					endwhile;
 						wp_reset_postdata();
-						}
-
 				}
 
-				/**
-				 * Translate attachment
-				 */
-				function dupcap_translate_attachment( $attachment_id, $new_lang, $parent_id ) {
+			}
+
+			/**
+			 * Translate attachment
+			 */
+			function dupcap_translate_attachment( $attachment_id, $new_lang, $parent_id ) {
 
 					global $dupcap__attachment_cache;
 
@@ -679,12 +685,12 @@ if ( ! class_exists( 'duplicateContentAddon' ) ) {
 					$dupcap__attachment_cache[ $attachment_id ] = $tr_id;
 
 					return $tr_id; // newly translated attachment
-				}
+			}
 
-				/**
-				 * This function is used to Generate attachment metadata
-				 */
-				function dupcap_attachment_metadata_update( $metadata, $attachment_id ) {
+			/**
+			 * This function is used to Generate attachment metadata
+			 */
+			function dupcap_attachment_metadata_update( $metadata, $attachment_id ) {
 
 					$attachment_lang = PLL()->model->post->get_language( $attachment_id );
 					$translations    = PLL()->model->post->get_translations( $attachment_id );
@@ -701,16 +707,15 @@ if ( ! class_exists( 'duplicateContentAddon' ) ) {
 
 					return $metadata;
 
-				}
+			}
 
-				/*
-				|------------------------------------------------------------------------
-				|  Get user info
-				|------------------------------------------------------------------------
-				*/
+			/*
+			|------------------------------------------------------------------------
+			|  Get user info
+			|------------------------------------------------------------------------
+			*/
 
-			
-				public static function dupcap_get_user_info() {
+			public static function dupcap_get_user_info() {
 					global $wpdb;
 					$server_info = [
 					'server_software'        => isset($_SERVER['SERVER_SOFTWARE']) ? sanitize_text_field( wp_unslash( $_SERVER['SERVER_SOFTWARE'] ) ) : 'N/A',
@@ -751,31 +756,31 @@ if ( ! class_exists( 'duplicateContentAddon' ) ) {
 								'active_plugins' => $plugin_data,
 							]
 						];
-				}
+			}
 
-				/*
-				|----------------------------------------------------------------------------
-				| Run when activate plugin.
-				|----------------------------------------------------------------------------
-				*/
-				public static function dupcap_activate() {
-					update_option( 'dupcap-v', DUPCAP_VERSION );
-					update_option( 'dupcap-type', 'FREE' );
-					update_option( 'dupcap-installDate', gmdate( 'Y-m-d h:i:s' ) );
-					update_option( 'dupcap-ratingDiv', 'no' );
+			/*
+			|----------------------------------------------------------------------------
+			| Run when activate plugin.
+			|----------------------------------------------------------------------------
+			*/
+			public static function dupcap_activate() {
+				update_option( 'dupcap-v', DUPCAP_VERSION );
+				update_option( 'dupcap-type', 'FREE' );
+				update_option( 'dupcap-installDate', gmdate( 'Y-m-d h:i:s' ) );
+				update_option( 'dupcap-ratingDiv', 'no' );
 
-					if (!get_option( 'dupcap_initial_save_version' ) ) {
+				if (!get_option( 'dupcap_initial_save_version' ) ) {
 						add_option( 'dupcap_initial_save_version', DUPCAP_VERSION );
-					}
 				}
+			}
 
-				/*
-				|----------------------------------------------------------------------------
-				| Run when de-activate plugin.
-				|----------------------------------------------------------------------------
-				*/
-				public static function dupcap_deactivate() {
-				}
+			/*
+			|----------------------------------------------------------------------------
+			| Run when de-activate plugin.
+			|----------------------------------------------------------------------------
+			*/
+			public static function dupcap_deactivate() {
+			}
 
 		}
 
