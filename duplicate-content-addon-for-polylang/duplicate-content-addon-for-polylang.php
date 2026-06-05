@@ -2,7 +2,7 @@
 /*
 Plugin Name: Duplicate Content Addon For Polylang
 Plugin URI: https://wordpress.org/plugins/duplicate-content-addon-for-polylang/
-Version: 2.0.3
+Version: 2.0.4
 Author: Khushwant Singh
 Author URI: https://profiles.wordpress.org/khushwantsidhu/
 Description: Duplicate content addon for Polylang to copy content from one language post to other language post for easy and quick translation.
@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 if ( ! defined( 'DUPCAP_VERSION' ) ) {
-	define( 'DUPCAP_VERSION', '2.0.3' );
+	define( 'DUPCAP_VERSION', '2.0.4' );
 }
 
 if ( ! defined( 'DUPCAP_DIR_PATH' ) ) {
@@ -157,12 +157,9 @@ if ( ! class_exists( 'duplicateContentAddon' ) ) {
 					if ( $is_new_post_copy || $is_existing_post_replace ) {
 
 						$from_post_id = absint( sanitize_text_field( wp_unslash( $_GET['from_post'] ) ) );
+						$replace_content = isset( $_GET['replace_content'] ) ? sanitize_text_field( wp_unslash( $_GET['replace_content'] ) ) : '';
 
 						if(!function_exists('current_user_can')){
-							return;
-						}
-
-						if(!current_user_can('edit_post', $from_post_id)){
 							return;
 						}
 
@@ -172,11 +169,16 @@ if ( ! class_exists( 'duplicateContentAddon' ) ) {
 							return;
 						}
 
+						// Defensive: require permissions on both source and target posts.
+						if ( ! current_user_can( 'edit_post', $from_post_id ) || ! current_user_can( 'edit_post', $post->ID ) ) {
+							return;
+						}
+
 						if ( ! PLL()->model->is_translated_post_type( $post->post_type ) ) {
 							return;
 						}
 
-						if ( ! empty( $post->post_content ) && empty( $_GET['replace_content'] ) ) {
+						if ( ! empty( $post->post_content ) && empty( $replace_content ) ) {
 							return;
 						}
 
@@ -184,10 +186,8 @@ if ( ! class_exists( 'duplicateContentAddon' ) ) {
 						$duplicate_options                  = get_user_meta( get_current_user_id(), 'pll_duplicate_content', true );
 						$is_polylang_pro_duplication_active = ! empty( $duplicate_options ) && ! empty( $duplicate_options[ $post->post_type ] );
 						if ( $is_polylang_pro_duplication_active ) {
-							// return;
+							return;
 						}
-
-						$from_post_id = isset($_GET['from_post']) ? absint($_GET['from_post']) : 0;
 						$get_new_lang = isset( $_GET['new_lang'] ) ? sanitize_text_field( wp_unslash( $_GET['new_lang'] ) ) : '';
 
 						$supported_langs = function_exists( 'pll_languages_list' ) ? pll_languages_list( [ 'fields' => 'slug' ] ) : [];
@@ -203,15 +203,18 @@ if ( ! class_exists( 'duplicateContentAddon' ) ) {
 
 						$from_post_obj = get_post( $from_post_id );
 
+						if ( ! ( $from_post_obj instanceof WP_Post ) ) {
+							return;
+						}
+
 						if ( has_blocks( $from_post_obj->ID ) ) {
 							$new_post_id     = $post->ID;
-							$orginal_post    = get_post( $from_post_obj->ID );
+							$orginal_post    = $from_post_obj;
 							$new_title       = $orginal_post->post_title;
 							$new_lang_slug   = $new_lang->slug;
 							$new_title .= ' (' . $new_lang_slug . ' translation)';
 							$current_user    = wp_get_current_user();
 							$new_post_author = $current_user->ID;
-							$replace_content  = isset( $_GET['replace_content'] ) ? sanitize_text_field( wp_unslash( $_GET['replace_content'] ) ) : '';
 							$post_status      = $replace_content ? $post->post_status : 'draft';
 							
 							$args = array(
@@ -246,13 +249,15 @@ if ( ! class_exists( 'duplicateContentAddon' ) ) {
 
 
 								clean_post_cache( $new_post_id );
-
+								
 								wp_safe_redirect(
 									admin_url(
 										'post.php?post=' . $new_post_id . '&action=edit&message=1'
 									)
 								);
+								
 								exit;
+
 						} else {
 
 								// create copy of Post/Page content
@@ -276,7 +281,6 @@ if ( ! class_exists( 'duplicateContentAddon' ) ) {
 							// copy post meta data
 							$this->dupcap_copy_post_meta( $post, $from_post_id );
 
-							// Flush rewrite rules to avoid 404 errors on the new post
 							flush_rewrite_rules( false );
 
 							add_action(
@@ -312,7 +316,7 @@ if ( ! class_exists( 'duplicateContentAddon' ) ) {
 				$new_post_id = $post->ID;
 				$meta_value  = get_post_meta( $from_post_id );
 				foreach ( $meta_value as $key => $value ) {
-					if ( substr( $key, 0, 1 ) != '_' ) {
+					if ( '_' !== substr( $key, 0, 1 ) ) {
 						update_post_meta( $new_post_id, $key, $value[0] );
 					}
 				}
@@ -720,7 +724,7 @@ if ( ! class_exists( 'duplicateContentAddon' ) ) {
 					$server_info = [
 					'server_software'        => isset($_SERVER['SERVER_SOFTWARE']) ? sanitize_text_field( wp_unslash( $_SERVER['SERVER_SOFTWARE'] ) ) : 'N/A',
 					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-						'mysql_version'          => $wpdb ? sanitize_text_field($wpdb->get_var("SELECT VERSION()")) : 'N/A',
+						'mysql_version'          => $wpdb ? sanitize_text_field( $wpdb->db_version() ) : 'N/A',
 						'php_version'            => sanitize_text_field(phpversion()),
 						'wp_version'             => sanitize_text_field(get_bloginfo('version')),
 						'wp_debug'               => sanitize_text_field(defined('WP_DEBUG') && WP_DEBUG ? 'Enabled' : 'Disabled'),

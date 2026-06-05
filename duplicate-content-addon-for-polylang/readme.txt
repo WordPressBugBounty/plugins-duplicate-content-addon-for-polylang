@@ -4,7 +4,7 @@ Tags: Polylang, duplicate page, Automatic Translation, AI translation, Content d
 Requires at least:5.0
 Tested up to:7.0
 Requires PHP:7.2
-Stable tag:2.0.3
+Stable tag:2.0.4
 Author URI:https://profiles.wordpress.org/khushwantsidhu/
 License:GPLv2 or later
 License URI:http://www.gnu.org/licenses/gpl-2.0.html
@@ -144,6 +144,9 @@ You can report security bugs through the Patchstack Vulnerability Disclosure Pro
 
 == Changelog ==
 
+= Version 2.0.4 | 05 June 2026 =
+- **Improvements:** Code Improvements & Optimization
+
 = Version 2.0.3 | 26 May 2026 =
 - **Fixed:** Resolved Gutenberg content sync issue for translated posts.
 - **Tested Up to:** Tested up to WordPress 7.0
@@ -206,6 +209,5 @@ You can report security bugs through the Patchstack Vulnerability Disclosure Pro
 - **New:** Initial Plugin Release
 
 == Upgrade Notice ==
-= Version 2.0.3 | 26 May 2026 =
-- **Fixed:** Resolved Gutenberg content sync issue for translated posts.
-- **Tested Up to:** Tested up to WordPress 7.0
+= Version 2.0.4 | 05 June 2026 =
+- **Improvements:** Code Improvements & Optimization

@@ -176,8 +176,8 @@ class DupcapUsersFeedback {
 					'timeout' => 30,
 					'body'    => array(
 						'site_id'=>md5($site_id),
-						'server_info' => serialize($server_info),
-						'extra_details' => serialize($extra_details),
+						'server_info' => wp_json_encode( $server_info ),
+						'extra_details' => wp_json_encode( $extra_details ),
 						'plugin_version' => $this->plugin_version,
 						'plugin_name'    => $this->plugin_name,
 						'plugin_initial'  => isset($plugin_initial) ? sanitize_text_field($plugin_initial) : 'N/A',
@@ -189,7 +189,9 @@ class DupcapUsersFeedback {
 				)
 			);
 
-			die( json_encode( array( 'response' => $response ) ) );
+			wp_send_json_success( array( 'response' => true ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			exit;
+
 		}
 
 	}

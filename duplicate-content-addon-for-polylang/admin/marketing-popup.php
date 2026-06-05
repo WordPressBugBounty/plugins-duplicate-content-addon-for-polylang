@@ -72,13 +72,13 @@ class Dupcap_Marketing_Popup {
      */
     public function dupcap_install_plugin() {
 
+		check_ajax_referer('dupcap_install_nonce', '_wpnonce');
+
         if (! current_user_can('install_plugins')) {
             wp_send_json_error([
                 'errorMessage' => esc_html__('Sorry, you are not allowed to install plugins on this site.', 'duplicate-content-addon-for-polylang'),
             ]);
         }
-
-		check_ajax_referer('dupcap_install_nonce', '_wpnonce');
 					
 		if (empty($_POST['slug'])) {
             wp_send_json_error([
@@ -103,12 +103,11 @@ class Dupcap_Marketing_Popup {
 		    ]);
 		}
 
-        $plugin_action = isset($_POST['plugin_action']) ? sanitize_key($_POST['plugin_action']) : 'install';
-        
-        $status      = [
-            'action' => $plugin_action,
-            'slug'   => $plugin_slug,
-        ];
+        $plugin_action = isset( $_POST['plugin_action'] ) ? sanitize_key( wp_unslash( $_POST['plugin_action'] ) ) : 'install';
+            $status = [
+                'action' => $plugin_action,
+                'slug'   => $plugin_slug,
+            ];
 		
         // If user is installing/activating Autopoly, consider the persistent notice dismissed
         update_option( 'cpel_autopoly_installed', 'dupcap' );
@@ -237,7 +236,6 @@ class Dupcap_Marketing_Popup {
         return false;
     }
 
-
     /**
      * Determines the optimal source post ID based on translation relationships and navigation context.
      * 
@@ -309,7 +307,7 @@ class Dupcap_Marketing_Popup {
 			return;
 		}
         // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-        $from_post_id = isset($_GET['from_post']) ? absint($_GET['from_post']) : 0;
+        $from_post_id = isset( $_GET['from_post'] ) ? absint( $_GET['from_post'] ) : 0;
         
         // Is this a duplication task?
         $is_duplicate_task = ($from_post_id > 0);
@@ -334,9 +332,10 @@ class Dupcap_Marketing_Popup {
                     return;
                 }
             }
-            
             // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-            if ( isset($_GET['copy_content']) && $_GET['copy_content'] === 'true' ) {
+            $copy_content = isset( $_GET['copy_content'] ) ? sanitize_text_field( wp_unslash( $_GET['copy_content'] ) ): '';
+            // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+            if ( 'true' === $copy_content ) {
                 return;
             }
         }
@@ -364,7 +363,7 @@ class Dupcap_Marketing_Popup {
         $has_content = $post && ! empty( $post->post_content );
 
         // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-        $is_copy_action = isset($_GET['copy_content']) && ( $_GET['copy_content'] === 'true' || $_GET['copy_content'] === '1' );
+        $is_copy_action = isset( $_GET['copy_content'] ) && ( 'true' === sanitize_text_field( wp_unslash( $_GET['copy_content'] ) ) || '1' === sanitize_text_field( wp_unslash( $_GET['copy_content'] ) ));
         // phpcs:ignore WordPress.Security.NonceVerification.Recommended
         $has_from_post = ! empty( $_GET['from_post'] );
 
@@ -424,10 +423,11 @@ class Dupcap_Marketing_Popup {
                         <button type="button" class="dupcap-copy-button button" 
                                data-from_lang="" 
                                id="dupcap-copy-button">
-                            <span class="dashicons dashicons-images-alt2"></span>
+                            <span class="dashicons dashicons-images-alt2" style="color: white; line-height: 0.9;"></span>
                             <?php /* translators: %s: Copy from */ ?>
                             <?php printf( esc_html__( 'Copy from %s', 'duplicate-content-addon-for-polylang' ), esc_html(   $original_lang ) ); ?>
                         </button>
+                        
                         <?php if ( $has_content ) : ?>
                             <p class="dupcap-copy-replace-notice ducap-override-waring">
                                 <span class="dashicons dashicons-warning" aria-hidden="true"></span>
@@ -481,7 +481,7 @@ class Dupcap_Marketing_Popup {
                              }
 
                              $btn_text = $btn_text_action;
-                             $btn_attrs = 'data-slug="' . esc_attr($btn_slug) . '" data-action="' . esc_attr($btn_action) . '" data-nonce="' . wp_create_nonce( 'dupcap_install_nonce' ) . '"';
+                             $btn_attrs = 'data-slug="' . esc_attr( $btn_slug ) . '" data-action="' . esc_attr( $btn_action ) . '" data-nonce="' . esc_attr( wp_create_nonce( 'dupcap_install_nonce' ) ) . '"';
                              $btn_icon_html = $magic_wand_svg;
                         }
                     ?>

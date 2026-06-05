@@ -3,7 +3,7 @@
         let plugin_name = 'duplicate-content-addon-for-polylang';
         let plugin_slug = 'duplicate-content-addon-for-polylang';
         let plugin_domain = 'dupcap';
-        $target = $('#the-list').find('[data-slug="' + plugin_name + '"] span.deactivate a');
+        let $target = $('#the-list').find('[data-slug="' + plugin_name + '"] span.deactivate a');
 
         var plugin_deactivate_link = $target.attr('href');
 

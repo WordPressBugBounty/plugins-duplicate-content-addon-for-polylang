@@ -83,7 +83,7 @@ if ( ! class_exists( 'dupcap_notices' ) ) :
 			$dismiss_nonce = wp_create_nonce( 'dupcap_atp_notice' );
 
 			echo '<div class="notice notice-info is-dismissible fdbgp-card-wrapper" data-nonce="' . esc_attr( $dismiss_nonce ) . '" data-url="' . esc_url( admin_url( 'admin-ajax.php' ) ) . '">
-						<p><span class="dashicons dashicons-editor-help" style="margin-top: 5px;"></span><strong>' . esc_html__( 'Did you know?', 'duplicate-content-addon-for-polylang' ) . '</strong> ' . esc_html__( 'Autopoly can automatically translate your Page/Post content using AI.', 'duplicate-content-addon-for-polylang' ) . ' <button type="button" class="' . esc_attr( $button_class ) . '" style="margin-left: 10px;"
+						<p><span class="dashicons dashicons-editor-help" style="margin-top: 9px;left: 0px;"></span><strong>' . esc_html__( 'Did you know?', 'duplicate-content-addon-for-polylang' ) . '</strong> ' . esc_html__( 'Autopoly can automatically translate your Page/Post content using AI.', 'duplicate-content-addon-for-polylang' ) . ' <button type="button" class="' . esc_attr( $button_class ) . '" style="margin-left: 10px;"
 								data-action="' . esc_attr( $action ) . '" 
 								data-slug="' . esc_attr( $plugin_slug ) . '" 
 								data-nonce="' . esc_attr( $nonce ) . '">
@@ -112,7 +112,7 @@ if ( ! class_exists( 'dupcap_notices' ) ) :
 			if ( $dupcap_atp_dismiss ) {
 				update_option( 'dupcap-atp-notice', 'yes' );
 			}
-			die();
+			wp_send_json_success();
 		}
 	}
 
