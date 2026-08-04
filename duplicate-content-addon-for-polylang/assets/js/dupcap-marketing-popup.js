@@ -31,6 +31,7 @@ class DupcapMarketingPopup {
     init() {
         this.moveModalToBody();
         this.bindEvents();
+        this.syncTranslateBtnText();
         this.checkAutoOpen();
     }
 
@@ -81,11 +82,11 @@ class DupcapMarketingPopup {
             }
         });
 
-        // Third-party Modal Interop (AutoPoly Warning)
-        this.$(document).on('click', this.selectors.warningWrapper, function () {
-            // Force other modal processing
-            self.$('#atfp-modal-open-warning-wrapper .modal-container').css('display', 'flex');
-            setTimeout(() => self.closeModal(), 200);
+        // Open AutoPoly translation when "Start Translation" is clicked
+        this.$(document).on('click', this.selectors.warningWrapper, function (e) {
+            e.preventDefault();
+            self.closeModal();
+            document.getElementById('atfp-translate-button')?.click();
         });
 
         // Plugin Installation
@@ -102,6 +103,7 @@ class DupcapMarketingPopup {
         this.$(document).on('click', this.selectors.dismissBtn, function (e) {
             self.handleDismissNotice(e, self.$(this));
         });
+
     }
 
     /**
@@ -110,6 +112,32 @@ class DupcapMarketingPopup {
     openModal() {
         this.$(this.selectors.modal).addClass('active');
         this.$('body').addClass('dupcap-modal-open');
+        this.syncTranslateBtnText();
+    }
+
+    /**
+     * Match marketing button label to AutoPoly translate button
+     */
+    syncTranslateBtnText() {
+        const $text = this.$('.atfp-modal-open-warning-wrapper .dupcap-btn-text');
+        if (!$text.length) return;
+
+        const sync = () => {
+            const label = document.getElementById('atfp-translate-button')?.value;
+            if (label) $text.text(label);
+            return !!label;
+        };
+
+        if (sync()) return;
+        if (this._syncTranslateInterval) return;
+
+        let tries = 0;
+        this._syncTranslateInterval = setInterval(() => {
+            if (sync() || ++tries > 60) {
+                clearInterval(this._syncTranslateInterval);
+                this._syncTranslateInterval = null;
+            }
+        }, 500);
     }
 
     /**
@@ -128,6 +156,7 @@ class DupcapMarketingPopup {
             $triggerWrapper.removeClass('show-tooltip');
         }, 5000);
     }
+
 
     /**
      * Check if the modal should automatically open
@@ -160,6 +189,7 @@ class DupcapMarketingPopup {
         const nonce = $btn.data('nonce');
         let action = $btn.data('action') || 'install';
         const $btnText = $btn.find('.dupcap-btn-text');
+   
 
         // Validation
         const $msgContainer = $wrapper.find('.dupcap-install-message');
@@ -178,6 +208,7 @@ class DupcapMarketingPopup {
 
         // UI State: Loading
         const originalText = $btnText.text();
+
         $btnText.text(action === 'activate' ? 'Activating...' : 'Installing...');
         $btn.addClass('disabled').css({ 'pointer-events': 'none', 'opacity': '0.7' });
 

@@ -2,9 +2,9 @@
 Contributors:khushwantsidhu
 Tags: Polylang, duplicate page, Automatic Translation, AI translation, Content duplication
 Requires at least:5.0
-Tested up to:7.0
+Tested up to:7.0.2
 Requires PHP:7.2
-Stable tag:2.0.4.1
+Stable tag:2.0.5
 Author URI:https://profiles.wordpress.org/khushwantsidhu/
 License:GPLv2 or later
 License URI:http://www.gnu.org/licenses/gpl-2.0.html
@@ -144,6 +144,9 @@ You can report security bugs through the Patchstack Vulnerability Disclosure Pro
 
 == Changelog ==
 
+= Version 2.0.5 | 04 Aug 2026 =
+- **Fixed:** Resolved an issue with the translation popup.
+
 = Version 2.0.4.1 | 22 June 2026 =
 - **Updated:** Assets Updated.
 
@@ -212,5 +215,5 @@ You can report security bugs through the Patchstack Vulnerability Disclosure Pro
 - **New:** Initial Plugin Release
 
 == Upgrade Notice ==
-= Version 2.0.4 | 05 June 2026 =
-- **Improvements:** Code Improvements & Optimization
+= Version 2.0.5 | 04 Aug 2026 =
+- **Fixed:** Resolved an issue with the translation popup.

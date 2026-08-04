@@ -371,6 +371,12 @@ class Dupcap_Marketing_Popup {
 
         $is_plugin_installed = defined( 'ATFP_V' ) || defined( 'ATFPP_V' );
 
+        $is_autopoly_free = defined( 'ATFP_V' );
+
+        if($is_autopoly_free  &&  $has_content){
+            return; 
+        }
+
         // Auto Open ONLY if: Trigger is shown AND Plugin NOT installed AND Post NOT just updated AND is post-new.php
         global $pagenow;
         $should_auto_open = $should_show_trigger && ! $has_content && ! $is_plugin_installed && ! $is_post_updated && ( $pagenow === 'post-new.php' );
