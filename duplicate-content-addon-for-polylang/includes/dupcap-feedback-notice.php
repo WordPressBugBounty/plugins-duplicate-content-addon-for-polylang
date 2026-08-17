@@ -14,9 +14,20 @@ if ( ! class_exists( 'dupcapFeedbackNotice' ) ) {
 
 				add_action( 'admin_notices', array( $this, 'dupcap_admin_notice_for_reviews' ) );
 				add_action( 'wp_ajax_dupcap_dismiss_notice', array( $this, 'dupcap_dismiss_review_notice' ) );
+				add_action('admin_enqueue_scripts', array( $this, 'dupcap_admin_enqueue_scripts' ));
 			}
 		}
 
+
+		public function dupcap_admin_enqueue_scripts() {
+
+			wp_enqueue_style(
+				'dupcap-feedback-notice-styles',
+				DUPCAP_URL . 'assets/css/dupcap-admin-feedback-notice.css',
+				array(),
+				DUPCAP_VERSION
+			);
+		}
 		// ajax callback for review notice
 		public function dupcap_dismiss_review_notice() {
 
@@ -58,7 +69,7 @@ if ( ! class_exists( 'dupcapFeedbackNotice' ) ) {
 			if ( isset( $diff_days ) && $diff_days >= 3 ) {
 
 				wp_enqueue_script( 'dupcap-feedback-notice-script', DUPCAP_URL . 'assets/js/dupcap-admin-feedback-notice.js', array( 'jquery' ), DUPCAP_VERSION, true );
-				wp_enqueue_style( 'dupcap-feedback-notice-styles', DUPCAP_URL . 'assets/css/dupcap-admin-feedback-notice.css', array(), DUPCAP_VERSION );
+				
 				
 				// Output is properly escaped within create_notice_content() method
 				echo $this->create_notice_content(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped

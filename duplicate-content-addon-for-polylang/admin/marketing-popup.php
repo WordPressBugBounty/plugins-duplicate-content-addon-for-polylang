@@ -93,6 +93,7 @@ class Dupcap_Marketing_Popup {
 		$allowed_slugs = [
 			'autopoly-ai-translation-for-polylang-pro',
 			'automatic-translations-for-polylang',
+			'language-switcher-for-divi-polylang',
 		];
 
 		if ( ! in_array( $plugin_slug, $allowed_slugs, true ) ) {

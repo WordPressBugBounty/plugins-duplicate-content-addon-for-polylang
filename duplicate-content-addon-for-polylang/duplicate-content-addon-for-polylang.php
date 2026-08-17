@@ -2,7 +2,7 @@
 /*
 Plugin Name: Duplicate Content Addon For Polylang
 Plugin URI: https://wordpress.org/plugins/duplicate-content-addon-for-polylang/
-Version: 2.0.5
+Version: 2.0.6
 Author: Khushwant Singh
 Author URI: https://profiles.wordpress.org/khushwantsidhu/
 Description: Duplicate content addon for Polylang to copy content from one language post to other language post for easy and quick translation.
@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 if ( ! defined( 'DUPCAP_VERSION' ) ) {
-	define( 'DUPCAP_VERSION', '2.0.5' );
+	define( 'DUPCAP_VERSION', '2.0.6' );
 }
 
 if ( ! defined( 'DUPCAP_DIR_PATH' ) ) {
@@ -97,12 +97,11 @@ if ( ! class_exists( 'duplicateContentAddon' ) ) {
 			}
 
 			function admin_notice() {
-				// Check Duplicate Content Addon for Polylang is installed and active
-				if ( is_plugin_active( 'duplicate-content-addon-for-polylang/duplicate-content-addon-for-polylang.php' ) ) {
-					if ( ! get_option( 'dupcap-atp-notice', false ) ) {
+				
+					if ( get_option( 'dupcap-atp-notice' ) !== 'yes' || get_option( 'dupcap-lsdp-notice' ) !== 'yes' || get_option( 'dupcap-lsdp-sidebar-notice' ) !== 'yes' ) {
 						require_once DUPCAP_DIR_PATH . '/admin/notice/dupcap-notice.php';
 					}
-				}
+				
 			}
 
 			function dupcap_plugin_required_admin_notice() {
