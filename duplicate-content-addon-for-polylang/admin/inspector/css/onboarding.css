@@ -1,0 +1,1518 @@
+/* Overlay on Translation Inspector dashboard — blur the dashboard behind the wizard */
+
+:root {
+	--dupcap-onb-primary: #1a6ce2;
+	--dupcap-onb-primary-hover: #1558b8;
+	--dupcap-onb-primary-soft: #eef4fd;
+	--dupcap-onb-primary-border: rgba(26, 108, 226, 0.35);
+	--dupcap-onb-text: #0f172a;
+	--dupcap-onb-subtitle: #475569;
+	--dupcap-onb-muted: #64748b;
+	--dupcap-onb-divider-line: rgba(26, 108, 226, 0.28);
+	--dupcap-onb-success: #10b981;
+	--dupcap-onb-success-text: #047857;
+}
+
+body.dupcap-onboarding-overlay {
+	overflow: hidden;
+}
+
+body.dupcap-onboarding-overlay #wpcontent,
+body.dupcap-onboarding-overlay #adminmenumain,
+body.dupcap-onboarding-overlay #wpadminbar {
+	filter: blur(8px);
+	pointer-events: none;
+	user-select: none;
+}
+
+.dupcap-onboarding.is-overlay {
+	position: fixed;
+	inset: 0;
+	z-index: 100100;
+	box-sizing: border-box;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 24px 16px;
+	background: rgba(15, 23, 42, 0.28);
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+	color: #0f172a;
+}
+
+.dupcap-onboarding.is-overlay .dupcap-onboarding__shell {
+	min-height: 0;
+	max-height: calc(100vh - 48px);
+	box-shadow: 0 24px 64px rgba(15, 23, 42, 0.28);
+}
+
+.dupcap-onboarding.is-overlay .dupcap-onboarding__content {
+	overflow-y: auto;
+	min-height: 0;
+	scrollbar-width: none;
+	-ms-overflow-style: none;
+}
+
+.dupcap-onboarding.is-overlay .dupcap-onboarding__content::-webkit-scrollbar {
+	display: none;
+	width: 0;
+	height: 0;
+}
+
+/* Fallback full-page setup when the Inspector dashboard is unavailable */
+
+html.wp-toolbar:has(body.dupcap-onboarding-screen) {
+	padding-top: 0 !important;
+}
+
+body.dupcap-onboarding-screen {
+	padding-top: 0 !important;
+	background: #f1f5f9;
+}
+
+body.dupcap-onboarding-screen #wpadminbar,
+body.dupcap-onboarding-screen #adminmenumain,
+body.dupcap-onboarding-screen #adminmenuback,
+body.dupcap-onboarding-screen #adminmenuwrap,
+body.dupcap-onboarding-screen #wpfooter {
+	display: none !important;
+}
+
+body.dupcap-onboarding-screen #wpcontent,
+body.dupcap-onboarding-screen.folded #wpcontent,
+body.dupcap-onboarding-screen.auto-fold #wpcontent,
+body.dupcap-onboarding-screen #wpbody,
+body.dupcap-onboarding-screen #wpbody-content {
+	margin: 0 !important;
+	padding: 0 !important;
+}
+
+body.dupcap-onboarding-screen #wpbody-content > .notice,
+body.dupcap-onboarding-screen #wpbody-content > .updated,
+body.dupcap-onboarding-screen #wpbody-content > .error,
+body.dupcap-onboarding-screen #wpbody-content > .update-nag {
+	display: none !important;
+}
+
+.dupcap-onboarding.is-page {
+	min-height: 100vh;
+	box-sizing: border-box;
+	display: flex;
+	align-items: stretch;
+	justify-content: center;
+	padding: 28px 20px 36px;
+	background: #f1f5f9;
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+	color: #0f172a;
+}
+
+.dupcap-onboarding__shell {
+	width: 100%;
+	max-width: 760px;
+	margin: 0 auto;
+	display: flex;
+	flex-direction: column;
+	background: #fff;
+	border-radius: 14px;
+	box-shadow: 0 16px 48px rgba(15, 23, 42, 0.12);
+	border: 1px solid #e8edf3;
+	overflow: hidden;
+	min-height: calc(100vh - 64px);
+}
+
+.dupcap-onboarding__topbar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	padding: 14px 28px;
+	border-bottom: 1px solid #e8edf3;
+	background: #fff;
+}
+
+.dupcap-onboarding__brand {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	min-width: 180px;
+}
+
+.dupcap-onboarding__brand-icon {
+	width: 28px;
+	height: 28px;
+	display: block;
+	flex: 0 0 auto;
+	object-fit: contain;
+}
+
+.dupcap-onboarding__brand-name {
+	font-size: 15px;
+	font-weight: 600;
+	line-height: 1.3;
+	color: #1e293b;
+}
+
+.dupcap-onboarding__exit {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 32px;
+	height: 32px;
+	min-width: 32px;
+	min-height: 32px;
+	background: transparent;
+	color: #94a3b8;
+	cursor: pointer;
+	padding: 0;
+	border-radius: 6px;
+	flex-shrink: 0;
+	line-height: 1;
+	box-sizing: border-box;
+	border: 0;
+}
+
+.dupcap-onboarding__exit-icon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 18px;
+	width: 18px;
+	height: 18px;
+	line-height: 1;
+}
+
+.dupcap-onboarding__exit-icon::before {
+	width: 18px;
+	height: 18px;
+	font-size: 18px;
+	line-height: 18px;
+	display: block;
+	text-align: center;
+}
+
+.dupcap-onboarding__exit:hover,
+.dupcap-onboarding__exit:focus {
+	background: #f1f5f9;
+	color: #0f172a;
+}
+
+.dupcap-onboarding__content {
+	flex: 1;
+	padding: 28px 36px 20px;
+	display: flex;
+	align-items: flex-start;
+	justify-content: center;
+}
+
+.dupcap-onboarding.is-overlay:has(.dupcap-onboarding__slide[data-step-id="done"]:not([hidden])) .dupcap-onboarding__content,
+.dupcap-onboarding.is-page:has(.dupcap-onboarding__slide[data-step-id="done"]:not([hidden])) .dupcap-onboarding__content {
+	align-items: center;
+	padding-top: 20px;
+	padding-bottom: 20px;
+}
+
+.dupcap-onboarding__slides {
+	width: 100%;
+	max-width: 960px;
+	margin: 0 auto;
+}
+
+.dupcap-onboarding__slide[hidden] {
+	display: none !important;
+}
+
+.dupcap-onboarding__title {
+	margin: 0 0 12px;
+	font-size: 34px;
+	line-height: 1.2;
+	font-weight: 800;
+	letter-spacing: -0.02em;
+	text-align: center;
+	color: var(--dupcap-onb-text);
+}
+
+.dupcap-onboarding__desc {
+	margin: 0 auto;
+	max-width: 540px;
+	font-size: 16px;
+	line-height: 1.55;
+	font-weight: 400;
+	color: var(--dupcap-onb-subtitle);
+	text-align: center;
+}
+
+.dupcap-onboarding__desc strong {
+	font-weight: 700;
+	color: var(--dupcap-onb-subtitle);
+}
+
+.dupcap-onboarding__features {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 20px;
+	margin: 0 0 8px;
+}
+
+.dupcap-onboarding__feature {
+	position: relative;
+	display: block;
+	padding: 20px 20px 18px;
+	border: 1px solid var(--dupcap-onb-primary-border);
+	border-radius: 12px;
+	background: #fff;
+}
+
+.dupcap-onboarding__feature.is-selectable {
+	cursor: pointer;
+	transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.dupcap-onboarding__feature.is-selectable:hover {
+	border-color: var(--dupcap-onb-primary);
+	background: var(--dupcap-onb-primary-soft);
+}
+
+.dupcap-onboarding__feature.is-selectable.is-checked {
+	border-color: var(--dupcap-onb-primary);
+	background: #fff;
+	box-shadow: 0 0 0 1px var(--dupcap-onb-primary) inset;
+}
+
+.dupcap-onboarding__feature.is-featured {
+	border-color: var(--dupcap-onb-primary);
+	background: linear-gradient(180deg, var(--dupcap-onb-primary-soft) 0%, #fff 72%);
+	box-shadow: 0 10px 28px rgba(34, 113, 177, 0.12);
+}
+
+.dupcap-onboarding__feature.is-featured.is-checked {
+	box-shadow: 0 0 0 1px var(--dupcap-onb-primary) inset, 0 10px 28px rgba(34, 113, 177, 0.12);
+}
+
+.dupcap-onboarding__feature.is-featured .dupcap-onboarding__feature-main {
+	padding-top: 22px;
+}
+
+.dupcap-onboarding__feature-main {
+	display: flex;
+	align-items: flex-start;
+	gap: 16px;
+}
+
+.dupcap-onboarding__feature-check {
+	position: absolute;
+	top: 18px;
+	right: 18px;
+	flex-shrink: 0;
+	width: 22px;
+	height: 22px;
+	margin: 0;
+	cursor: pointer;
+	appearance: none;
+	-webkit-appearance: none;
+	border: 2px solid var(--dupcap-onb-primary);
+	border-radius: 5px;
+	background: #fff;
+	display: block;
+}
+
+.dupcap-onboarding__feature-check:checked {
+	background-color: var(--dupcap-onb-primary);
+	border-color: var(--dupcap-onb-primary);
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='M3.5 8.2L6.4 11.1L12.5 5' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size: 14px 14px;
+}
+
+.dupcap-onboarding__feature-body {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	flex: 1;
+}
+
+.dupcap-onboarding__feature-icon {
+	flex-shrink: 0;
+	width: 56px;
+	height: 56px;
+	border-radius: 12px;
+	background: var(--dupcap-onb-primary-soft);
+	color: var(--dupcap-onb-primary);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 26px;
+	line-height: 1;
+}
+
+.dupcap-onboarding__feature.is-selectable.is-checked .dupcap-onboarding__feature-icon {
+	background: var(--dupcap-onb-primary-soft);
+	color: var(--dupcap-onb-primary);
+}
+
+.dupcap-onboarding__feature-icon.dashicons:before {
+	width: 26px;
+	height: 26px;
+	font-size: 26px;
+}
+
+.dupcap-onboarding__feature-icon--img img {
+	display: block;
+	width: 32px;
+	height: 32px;
+}
+
+.dupcap-onboarding__feature-title {
+	display: block;
+	margin: 0 0 6px;
+	font-size: 16px;
+	font-weight: 700;
+	line-height: 1.35;
+	color: var(--dupcap-onb-text);
+}
+
+.dupcap-onboarding__feature-text {
+	margin: 0;
+	font-size: 13px;
+	line-height: 1.55;
+	color: var(--dupcap-onb-muted);
+}
+
+/* Usage data sharing opt-in: the "See terms" toggle and its details panel. */
+
+.dupcap-onboarding__optin-terms-toggle {
+	padding: 0;
+	border: 0;
+	background: none;
+	cursor: pointer;
+	color: var(--dupcap-onb-primary);
+	font: inherit;
+	text-decoration: underline;
+}
+
+.dupcap-onboarding__optin-details {
+	margin: 10px 0 0;
+	padding: 10px 0 0;
+	border-top: 1px solid var(--dupcap-onb-primary-border);
+	font-size: 12px;
+	line-height: 1.5;
+	color: #787c82;
+}
+
+.dupcap-onboarding__optin-details p {
+	margin: 0 0 6px;
+}
+
+.dupcap-onboarding__optin-details ul {
+	margin: 0;
+	padding-left: 18px;
+	list-style: disc;
+}
+
+.dupcap-onboarding__list,
+.dupcap-onboarding__checklist {
+	margin: 0 0 8px;
+	padding: 0;
+	list-style: none;
+}
+
+.dupcap-onboarding__list li {
+	position: relative;
+	padding: 10px 12px 10px 30px;
+	font-size: 14px;
+	line-height: 1.45;
+	color: #334155;
+	border-radius: 8px;
+}
+
+.dupcap-onboarding__list li::before {
+	content: "";
+	position: absolute;
+	left: 12px;
+	top: 16px;
+	width: 7px;
+	height: 7px;
+	border-radius: 50%;
+	background: var(--dupcap-onb-primary);
+}
+
+.dupcap-onboarding__list--cards {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	margin: 0 0 22px;
+}
+
+.dupcap-onboarding__list--cards li {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	padding: 14px 16px;
+	margin: 0;
+	border: 1px solid #e5e7eb;
+	border-radius: 10px;
+	background: #fff;
+	box-shadow: none;
+}
+
+.dupcap-onboarding__list--cards li::before {
+	display: none;
+}
+
+.dupcap-onboarding__list-step {
+	flex-shrink: 0;
+	width: 24px;
+	height: 24px;
+	border-radius: 50%;
+	background: var(--dupcap-onb-primary);
+	color: #fff;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 13px;
+	font-weight: 700;
+	line-height: 1;
+}
+
+.dupcap-onboarding__list-text {
+	font-size: 14px;
+	line-height: 1.5;
+	color: var(--dupcap-onb-text);
+	font-weight: 400;
+}
+
+.dupcap-onboarding__slide--guided .dupcap-onboarding__title {
+	font-size: 32px;
+	font-weight: 800;
+	color: #1a1a1a;
+	margin-left: auto;
+	margin-right: auto;
+	margin-bottom: 24px;
+}
+
+.dupcap-onboarding__slide--guided .dupcap-onboarding__desc {
+	color: #6b7280;
+	max-width: 480px;
+	margin-left: auto;
+	margin-right: auto;
+	margin-bottom: 10px;
+}
+
+.dupcap-onboarding__slide--guided .dupcap-onboarding__list--cards {
+	width: 92%;
+	margin-left: auto;
+	margin-right: auto;
+	margin-bottom: 22px;
+}
+
+.dupcap-onboarding__slide--guided .dupcap-onboarding__demo {
+	width: 100%;
+	max-width: none;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.dupcap-onboarding__checklist li {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 12px 14px;
+	margin-bottom: 10px;
+	border-radius: 10px;
+	font-size: 14px;
+	font-weight: 600;
+}
+
+.dupcap-onboarding__checklist li.is-ok {
+	background: #ecfdf5;
+	color: #065f46;
+}
+
+.dupcap-onboarding__checklist li.is-fail {
+	background: #fff7ed;
+	color: #9a3412;
+}
+
+.dupcap-onboarding__checklist .dashicons {
+	font-size: 18px;
+	width: 18px;
+	height: 18px;
+}
+
+.dupcap-onboarding__link-wrap {
+	margin: 16px 0 0;
+	text-align: center;
+}
+
+.dupcap-onboarding__demo {
+	position: relative;
+	margin-top: 18px;
+	overflow: visible;
+}
+
+.dupcap-onboarding__demo-label {
+	display: inline-block;
+	margin: 0 0 10px 20px;
+	padding: 4px 12px;
+	border-radius: 999px;
+	border: 1px solid rgba(26, 108, 226, 0.12);
+	background: var(--dupcap-onb-primary-soft);
+	color: var(--dupcap-onb-primary);
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.03em;
+	line-height: 1.2;
+	text-transform: uppercase;
+}
+
+.dupcap-onboarding__demo-frame {
+	position: relative;
+	margin-top: 0;
+	padding: 24px 48px 20px;
+	border: 1px dashed rgba(26, 108, 226, 0.35);
+	border-radius: 12px;
+	background: #fff;
+	overflow: visible;
+}
+
+.dupcap-onboarding__demo-card {
+	padding: 0;
+	border: 0;
+	background: transparent;
+}
+
+.dupcap-onboarding__demo-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 10px 12px;
+	border-radius: 8px;
+	background: #fff;
+	border: 1px solid #e2e8f0;
+}
+
+.dupcap-onboarding__demo-row.is-target {
+	border-color: var(--dupcap-onb-primary);
+	background: var(--dupcap-onb-primary-soft);
+}
+
+.dupcap-onboarding__demo-flag {
+	flex-shrink: 0;
+	min-width: 28px;
+	height: 22px;
+	padding: 0 6px;
+	border-radius: 4px;
+	background: #0f172a;
+	color: #fff;
+	font-size: 10px;
+	font-weight: 700;
+	line-height: 22px;
+	text-align: center;
+}
+
+.dupcap-onboarding__demo-title {
+	flex: 1;
+	font-size: 13px;
+	font-weight: 600;
+	color: #1a1a1a;
+}
+
+.dupcap-onboarding__demo-badge {
+	font-size: 11px;
+	font-weight: 700;
+	color: #64748b;
+	white-space: nowrap;
+}
+
+.dupcap-onboarding__demo-badge.is-copy {
+	color: var(--dupcap-onb-primary);
+	font-weight: 700;
+}
+
+.dupcap-onboarding__demo-arrow {
+	text-align: center;
+	color: #94a3b8;
+	font-size: 14px;
+	line-height: 1.4;
+	margin: 4px 0;
+}
+
+.dupcap-onboarding__demo-hint {
+	margin: 10px 0 0;
+	font-size: 12px;
+	line-height: 1.4;
+	color: #64748b;
+	text-align: center;
+}
+
+.dupcap-onboarding__demo-score {
+	display: flex;
+	align-items: baseline;
+	gap: 8px;
+	margin-bottom: 10px;
+}
+
+.dupcap-onboarding__demo-score-num {
+	font-size: 32px;
+	font-weight: 800;
+	color: var(--dupcap-onb-primary);
+	line-height: 1;
+}
+
+.dupcap-onboarding__demo-score-label {
+	font-size: 13px;
+	font-weight: 600;
+	color: #64748b;
+}
+
+.dupcap-onboarding__demo-issues {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.dupcap-onboarding__demo-issues li {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 0;
+	font-size: 13px;
+	font-weight: 500;
+	color: #334155;
+	border-bottom: 1px solid #e2e8f0;
+}
+
+.dupcap-onboarding__demo-issues li:last-child {
+	border-bottom: 0;
+}
+
+.dupcap-onboarding__demo-issues span {
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	flex-shrink: 0;
+}
+
+.dupcap-onboarding__demo-issues span.is-crit {
+	background: #ef4444;
+}
+
+.dupcap-onboarding__demo-issues span.is-warn {
+	background: #f59e0b;
+}
+
+.dupcap-onboarding__demo-issues span.is-info {
+	background: #3b82f6;
+}
+
+.dupcap-onboarding__footer {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	padding: 16px 28px;
+	border-top: 1px solid #e8edf3;
+	background: #fafbfc;
+}
+
+.dupcap-onboarding__footer-note {
+	flex: 1;
+	margin: 0;
+	color: #94a3b8;
+	font-size: 12px;
+	line-height: 1.5;
+	text-align: left;
+}
+
+.dupcap-onboarding .button.button-primary,
+.dupcap-onboarding .dupcap-onboarding__next,
+.dupcap-onboarding .dupcap-onboarding__finish {
+	display: inline-flex !important;
+	align-items: center;
+	justify-content: center;
+	background: var(--dupcap-onb-primary) !important;
+	border-color: var(--dupcap-onb-primary) !important;
+	color: #fff !important;
+	border-radius: 8px !important;
+	box-shadow: none !important;
+	font-size: 14px !important;
+	font-weight: 600 !important;
+	line-height: 1.3 !important;
+	min-height: 40px !important;
+	height: 40px !important;
+	padding: 0 22px !important;
+	box-sizing: border-box !important;
+}
+
+.dupcap-onboarding .button.button-primary:hover,
+.dupcap-onboarding .button.button-primary:focus,
+.dupcap-onboarding .dupcap-onboarding__next:hover,
+.dupcap-onboarding .dupcap-onboarding__next:focus,
+.dupcap-onboarding .dupcap-onboarding__finish:hover,
+.dupcap-onboarding .dupcap-onboarding__finish:focus {
+	background: var(--dupcap-onb-primary-hover) !important;
+	border-color: var(--dupcap-onb-primary-hover) !important;
+	color: #fff !important;
+}
+
+.dupcap-onboarding .dupcap-onboarding__next.is-loading {
+	opacity: 0.88 !important;
+	cursor: not-allowed !important;
+	pointer-events: none !important;
+}
+
+.dupcap-spinner {
+	width: 16px;
+	height: 16px;
+	margin-right: 8px;
+	animation: dupcap-spin 0.8s linear infinite;
+	display: inline-block;
+	vertical-align: middle;
+	flex-shrink: 0;
+}
+
+@keyframes dupcap-spin {
+	0% {
+		transform: rotate(0deg);
+	}
+	100% {
+		transform: rotate(360deg);
+	}
+}
+
+
+.dupcap-onboarding .dupcap-onboarding__prev {
+	display: inline-flex !important;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	border-radius: 8px !important;
+	min-height: 44px !important;
+	height: 44px !important;
+	padding: 0 20px !important;
+	font-size: 14px !important;
+	font-weight: 600 !important;
+	line-height: 1.3 !important;
+	box-sizing: border-box !important;
+	color: var(--dupcap-onb-primary) !important;
+	border: 1px solid var(--dupcap-onb-primary-border) !important;
+	background: #fff !important;
+	box-shadow: none !important;
+	vertical-align: middle;
+}
+
+.dupcap-onboarding .dupcap-onboarding__prev .dashicons {
+	font-size: 18px;
+	width: 18px;
+	height: 18px;
+	line-height: 1;
+}
+
+.dupcap-onboarding .dupcap-onboarding__prev[hidden],
+.dupcap-onboarding .dupcap-onboarding__next[hidden],
+.dupcap-onboarding .dupcap-onboarding__finish[hidden] {
+	display: none !important;
+}
+
+.dupcap-onboarding [hidden] {
+	display: none !important;
+}
+
+.dupcap-onboarding__nav {
+	display: flex;
+	gap: 8px;
+	margin-left: auto;
+}
+
+/* Short viewports: the wizard is capped at calc(100dvh - 48px), and at the
+   laptop heights most people run wp-admin on the content needed ~100px more
+   than that, so the panel scrolled and clipped its own cards. Tighten the
+   vertical rhythm instead - nothing here changes on a tall screen. */
+@media (max-height: 860px) {
+	.dupcap-onboarding__content {
+		padding: 20px 48px 16px;
+	}
+
+	.dupcap-onboarding__title {
+		margin: 0 0 8px;
+		font-size: 28px;
+	}
+
+	.dupcap-onboarding__desc {
+		font-size: 15px;
+	}
+
+	.dupcap-onboarding__feature {
+		padding: 14px 16px 12px;
+	}
+
+	.dupcap-onboarding__features {
+		gap: 14px;
+	}
+
+	.dupcap-onboarding__footer {
+		padding: 12px 32px;
+	}
+
+	/* Step 2 is the tallest: the guided slide adds a heading block, a
+	   checklist and the demo frame. */
+	.dupcap-onboarding__slide--guided .dupcap-onboarding__title {
+		margin-bottom: 14px;
+	}
+
+	.dupcap-onboarding__demo {
+		margin-top: 10px;
+	}
+
+	.dupcap-onboarding__demo-label {
+		margin: 0 0 6px 20px;
+	}
+
+	.dupcap-onboarding__demo-frame {
+		padding: 14px 32px 12px;
+	}
+
+	.dupcap-onboarding__checklist li {
+		gap: 8px;
+	}
+
+	.dupcap-onboarding__list--cards {
+		gap: 8px;
+	}
+
+	.dupcap-onboarding__list--cards li {
+		padding: 10px 16px;
+	}
+
+	.dupcap-onboarding__slide--guided .dupcap-onboarding__list--cards {
+		margin-bottom: 14px;
+	}
+}
+
+@media (max-width: 860px) {
+	.dupcap-onboarding.is-overlay {
+		padding: 12px;
+		align-items: stretch;
+	}
+
+	.dupcap-onboarding.is-overlay .dupcap-onboarding__shell {
+		max-height: none;
+		min-height: calc(100vh - 24px);
+		min-height: calc(100dvh - 24px);
+		border-radius: 12px;
+	}
+
+	.dupcap-onboarding__topbar {
+		flex-wrap: wrap;
+	}
+
+	.dupcap-onboarding__brand {
+		min-width: 0;
+		order: 1;
+	}
+
+	.dupcap-onboarding__exit {
+		order: 2;
+		margin-left: auto;
+	}
+
+	.dupcap-onboarding__content {
+		padding: 28px 20px 16px;
+	}
+
+	.dupcap-onboarding__features {
+		grid-template-columns: 1fr;
+	}
+
+	.dupcap-onboarding__title {
+		font-size: 26px;
+	}
+
+	.dupcap-onboarding__desc {
+		font-size: 15px;
+	}
+
+	.dupcap-onboarding__footer {
+		flex-direction: column-reverse;
+		align-items: stretch;
+	}
+
+	.dupcap-onboarding__nav {
+		justify-content: stretch;
+	}
+
+	.dupcap-onboarding__nav .button {
+		flex: 1;
+	}
+
+	.dupcap-onboarding__slide--guided .dupcap-onboarding__list--cards {
+		width: 100%;
+		max-width: none;
+	}
+
+	.dupcap-onboarding__demo-frame {
+		padding: 20px 20px 16px;
+	}
+}
+
+/* ---------------------------------------------------------------------------
+   Feature rows (first step)
+
+   One row per feature, stacked, with the tick on the right. Core rows are the
+   plugin's own tools: green and locked. Add-on rows are separate plugins: blue
+   and clearable until they are installed.
+   --------------------------------------------------------------------------- */
+
+.dupcap-onboarding__features--rows {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	margin: 4px 0 0;
+	border-top: 0;
+}
+
+.dupcap-onboarding__features--rows .dupcap-onboarding__feature {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 14px;
+	padding: 14px 16px;
+	border: 1px solid #e5e7eb;
+	border-radius: 10px;
+	background: #ffffff;
+	text-align: left;
+	box-shadow: none;
+	transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.dupcap-onboarding__features--rows .dupcap-onboarding__feature:hover {
+	border-color: #cbd5e1;
+	box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+}
+
+.dupcap-onboarding__features--rows .dupcap-onboarding__feature:last-child {
+	border-bottom: 1px solid #e5e7eb;
+}
+
+/* The real checkbox stays in the DOM for the script and for keyboard users;
+   the visible control is the round mark on the right. */
+.dupcap-onboarding__features--rows .dupcap-onboarding__feature-check {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	margin: -1px;
+	padding: 0;
+	border: 0;
+	overflow: hidden;
+	clip: rect(0 0 0 0);
+	clip-path: inset(50%);
+	white-space: nowrap;
+}
+
+.dupcap-onboarding__features--rows .dupcap-onboarding__feature-main {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	flex: 1;
+	min-width: 0;
+}
+
+.dupcap-onboarding__features--rows .dupcap-onboarding__feature-icon {
+	width: 40px;
+	height: 40px;
+	border-radius: 8px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 18px;
+	flex-shrink: 0;
+}
+
+.dupcap-onboarding__features--rows .dupcap-onboarding__feature-icon.dashicons:before {
+	width: 18px;
+	height: 18px;
+	font-size: 18px;
+}
+
+.dupcap-onboarding__features--rows .dupcap-onboarding__feature-icon--img img {
+	width: 22px;
+	height: 22px;
+}
+
+.dupcap-onboarding__feature[data-dupcap-addon="ai_translation"] .dupcap-onboarding__feature-icon,
+.dupcap-onboarding__feature[data-dupcap-addon="language_switcher"] .dupcap-onboarding__feature-icon {
+	background: #eff6ff;
+	color: #2563eb;
+}
+
+.dupcap-onboarding__feature-header {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex-wrap: wrap;
+	margin-bottom: 4px;
+}
+
+.dupcap-onboarding__features--rows .dupcap-onboarding__feature-title {
+	font-size: 15px;
+	font-weight: 700;
+	line-height: 1.3;
+	margin-bottom: 0;
+	color: #0f172a;
+}
+
+.dupcap-onboarding__features--rows .dupcap-onboarding__feature-text {
+	font-size: 13px;
+	line-height: 1.45;
+	color: #64748b;
+}
+
+.dupcap-onboarding__feature-note {
+	display: inline-flex;
+	align-items: center;
+	margin-top: 0;
+	padding: 2px 8px;
+	border-radius: 999px;
+	background: #eff6ff;
+	color: #2563eb;
+	border: 1px solid rgba(37, 99, 235, 0.18);
+	font-size: 11px;
+	font-weight: 600;
+	font-style: normal;
+	line-height: 1.3;
+	letter-spacing: 0.01em;
+}
+
+.dupcap-onboarding__feature.is-core .dupcap-onboarding__feature-note {
+	background: #f1f5f9;
+	color: #64748b;
+	border-color: #e2e8f0;
+}
+
+.dupcap-onboarding__feature.is-busy .dupcap-onboarding__feature-note {
+	background: var(--dupcap-onb-primary-soft);
+	color: var(--dupcap-onb-primary);
+	border-color: var(--dupcap-onb-primary-border);
+	font-style: normal;
+	font-weight: 600;
+}
+
+.dupcap-onboarding__feature.is-done .dupcap-onboarding__feature-note {
+	background: #ecfdf5;
+	color: var(--dupcap-onb-success-text);
+	border-color: #a7f3d0;
+	font-style: normal;
+	font-weight: 600;
+}
+
+.dupcap-onboarding__feature.is-error .dupcap-onboarding__feature-note {
+	background: #fef2f2;
+	color: #b42318;
+	border-color: #fecaca;
+	font-style: normal;
+	font-weight: 600;
+}
+
+/* The tick. Filled when checked, hollow when the user clears an add-on. */
+.dupcap-onboarding__feature-mark {
+	flex-shrink: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 22px;
+	height: 22px;
+	margin-top: 0;
+	border: 2px solid #cbd5e1;
+	border-radius: 50%;
+	background: #fff;
+	color: transparent;
+	transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.dupcap-onboarding__feature-mark {
+	cursor: pointer;
+}
+
+.dupcap-onboarding__feature.is-locked .dupcap-onboarding__feature-mark {
+	cursor: default;
+}
+
+.dupcap-onboarding__feature-mark[data-dupcap-tooltip] {
+	position: relative;
+}
+
+.dupcap-onboarding__feature-mark[data-dupcap-tooltip]::before {
+	content: attr(data-dupcap-tooltip);
+	position: absolute;
+	bottom: calc(100% + 9px);
+	right: -8px;
+	padding: 7px 12px;
+	border-radius: 7px;
+	background: #0f172a;
+	color: #ffffff;
+	font-size: 12px;
+	font-weight: 500;
+	line-height: 1.35;
+	white-space: nowrap;
+	pointer-events: none;
+	opacity: 0;
+	visibility: hidden;
+	transform: translateY(4px);
+	transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.2s ease;
+	box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.3), 0 8px 10px -6px rgba(15, 23, 42, 0.2);
+	z-index: 100;
+}
+
+.dupcap-onboarding__feature-mark[data-dupcap-tooltip]::after {
+	content: "";
+	position: absolute;
+	bottom: calc(100% + 3px);
+	right: 5px;
+	border-width: 6px 6px 0 6px;
+	border-style: solid;
+	border-color: #0f172a transparent transparent transparent;
+	pointer-events: none;
+	opacity: 0;
+	visibility: hidden;
+	transform: translateY(4px);
+	transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.2s ease;
+	z-index: 100;
+}
+
+.dupcap-onboarding__feature-mark[data-dupcap-tooltip]:hover::before,
+.dupcap-onboarding__feature-mark[data-dupcap-tooltip]:hover::after,
+.dupcap-onboarding__feature.is-locked:hover .dupcap-onboarding__feature-mark[data-dupcap-tooltip]::before,
+.dupcap-onboarding__feature.is-locked:hover .dupcap-onboarding__feature-mark[data-dupcap-tooltip]::after,
+.dupcap-onboarding__feature-mark.is-tooltip-active::before,
+.dupcap-onboarding__feature-mark.is-tooltip-active::after {
+	opacity: 1;
+	visibility: visible;
+	transform: translateY(0);
+}
+
+.dupcap-onboarding__feature:not(.is-locked) .dupcap-onboarding__feature-mark:hover {
+	border-color: var(--dupcap-onb-primary);
+}
+
+/* Green means running: the Toolkit tools, an add-on already installed and
+   active, an add-on this run just installed, and the opt-in. */
+.dupcap-onboarding__feature.is-checked.is-core .dupcap-onboarding__feature-mark,
+.dupcap-onboarding__feature.is-checked.is-done:not(.is-addon) .dupcap-onboarding__feature-mark,
+.dupcap-onboarding__feature.is-checked.is-addon.is-locked .dupcap-onboarding__feature-mark,
+.dupcap-onboarding__feature--optin.is-checked .dupcap-onboarding__feature-mark {
+	color: #fff !important;
+	border-color: #22c55e;
+	background: #22c55e;
+	animation: none !important;
+}
+
+/* Blue is the promise, not the state: an add-on ticked to be installed or
+   activated when the user continues, and the same row while that runs. It
+   turns green once the add-on is actually running. No row spinner; loading
+   stays on the Please Wait button only. */
+.dupcap-onboarding__feature.is-checked.is-addon:not(.is-locked):not(.dupcap-onboarding__feature--optin) .dupcap-onboarding__feature-mark {
+	color: #fff !important;
+	border-color: #2563eb !important;
+	background: #2563eb !important;
+	animation: none !important;
+}
+
+.dupcap-onboarding__feature.is-error .dupcap-onboarding__feature-mark {
+	border-color: #f0b3ad;
+	background: #fff;
+	color: transparent;
+	animation: none;
+}
+
+/* Keyboard focus has to land somewhere visible, since the input is off-screen. */
+.dupcap-onboarding__features--rows .dupcap-onboarding__feature-check:focus-visible + .dupcap-onboarding__feature-main ~ .dupcap-onboarding__feature-mark {
+	box-shadow: 0 0 0 3px rgba(26, 108, 226, 0.35);
+}
+
+@media screen and (max-width: 782px) {
+	.dupcap-onboarding__features--rows .dupcap-onboarding__feature {
+		padding: 14px 2px;
+		gap: 12px;
+	}
+
+	.dupcap-onboarding__features--rows .dupcap-onboarding__feature-icon {
+		width: 32px;
+		height: 32px;
+	}
+}
+
+/* ---------------------------------------------------------------------------
+   Features step header
+
+   The shared slide header is a centred 34px title over a narrow centred
+   paragraph. That suits a confirmation screen, not a list you pick from, so
+   this step gets a left-aligned header sized to sit above the list. The Done
+   step keeps the centred version.
+   --------------------------------------------------------------------------- */
+
+.dupcap-onboarding__slide[data-step-id="features"] .dupcap-onboarding__title {
+	margin: 0 0 6px;
+	font-size: 22px;
+	font-weight: 700;
+	letter-spacing: -0.015em;
+	line-height: 1.25;
+	text-align: left;
+}
+
+.dupcap-onboarding__slide[data-step-id="features"] .dupcap-onboarding__desc {
+	max-width: 720px;
+    /* margin: 0 0 16px; */
+    font-size: 14px;
+    margin-top: -5px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    line-height: 1.5;
+    text-align: left;
+    color: #64748b;
+}
+
+/* Keep the longest row text clear of the tick on the right. */
+.dupcap-onboarding__features--rows .dupcap-onboarding__feature-body {
+	padding-right: 8px;
+}
+
+/* A cleared add-on row promises nothing, so its status note ("will be
+   installed", "will be activated") goes away with the tick. Core rows are
+   exempt: "Included in Toolkit" is a fact about the plugin, true whether the
+   tool is switched on or off. */
+.dupcap-onboarding__feature--row.is-addon:not(.is-checked) .dupcap-onboarding__feature-note {
+	display: none;
+}
+
+/* The features step explains itself down here, beside Continue, so the list can
+   start directly under the heading. */
+.dupcap-onboarding__footer-note[hidden] {
+	display: none;
+}
+
+@media screen and (max-width: 782px) {
+	.dupcap-onboarding__footer-note {
+		display: none;
+	}
+}
+
+/* ---------------------------------------------------------------------------
+   Usage-data opt-in
+
+   Same row as the features above it, so the step reads as one list.
+   --------------------------------------------------------------------------- */
+
+.dupcap-onboarding__feature-terms {
+	display: block;
+	margin-top: 6px;
+	font-size: 12px;
+	line-height: 1.4;
+}
+
+/* The details panel is built from spans, so each part needs its own box. */
+.dupcap-onboarding__feature--optin .dupcap-onboarding__optin-details {
+	display: block;
+	max-width: 620px;
+}
+
+.dupcap-onboarding__optin-details-text,
+.dupcap-onboarding__optin-details-item {
+	display: block;
+}
+
+.dupcap-onboarding__optin-details-item {
+	position: relative;
+	margin-top: 4px;
+	padding-left: 14px;
+}
+
+.dupcap-onboarding__optin-details-item::before {
+	content: "";
+	position: absolute;
+	top: 7px;
+	left: 3px;
+	width: 4px;
+	height: 4px;
+	border-radius: 50%;
+	background: currentColor;
+}
+
+/* ---------------------------------------------------------------------------
+   Step 2 ("Done / Ready") Screen — matches clean finish mockup
+   --------------------------------------------------------------------------- */
+
+.dupcap-onboarding__slide[data-step-id="done"] {
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	min-height: 360px;
+}
+
+.dupcap-onboarding__done-wrapper {
+	text-align: center;
+	padding: 48px 24px 56px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	box-sizing: border-box;
+}
+
+.dupcap-onboarding__done-hero {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
+	max-width: 520px;
+}
+
+.dupcap-onboarding__done-badge-glow {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 88px;
+	height: 88px;
+	border-radius: 999px;
+	background: rgba(37, 99, 235, 0.06);
+	box-shadow: 0 0 40px 14px rgba(37, 99, 235, 0.1);
+	margin-bottom: 28px;
+}
+
+.dupcap-onboarding__done-badge-circle {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 52px;
+	height: 52px;
+	border-radius: 999px;
+	background: #2563eb;
+	box-shadow: 0 6px 18px rgba(37, 99, 235, 0.35);
+}
+
+.dupcap-onboarding__done-hero .dupcap-onboarding__title {
+	font-size: 26px;
+	font-weight: 700;
+	color: #0f172a;
+	margin: 0 0 10px;
+	text-align: center;
+	letter-spacing: -0.02em;
+	line-height: 1.25;
+}
+
+.dupcap-onboarding__done-hero .dupcap-onboarding__desc {
+	font-size: 14px;
+	color: #64748b;
+	line-height: 1.55;
+	margin: 0 0 28px;
+	max-width: 440px;
+	text-align: center;
+	font-weight: 400;
+}
+
+.dupcap-onboarding__done-tags {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+	gap: 10px;
+}
+
+.dupcap-onboarding__done-tag {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 7px 14px;
+	border-radius: 999px;
+	background: #f8fafc;
+	border: 1px solid #e2e8f0;
+	color: #475569;
+	font-size: 12.5px;
+	font-weight: 600;
+	line-height: 1.2;
+}
+
+.dupcap-onboarding__done-dot {
+	width: 7px;
+	height: 7px;
+	border-radius: 50%;
+	display: inline-block;
+	flex-shrink: 0;
+}
+
+.dupcap-onboarding__done-dot.is-green {
+	background: #10b981;
+}
+
+.dupcap-onboarding__done-dot.is-blue {
+	background: #2563eb;
+}
+
+/* Done footer: primary CTA only, right-aligned */
+.dupcap-onboarding[data-step-id="done"] .dupcap-onboarding__prev,
+.dupcap-onboarding.is-overlay:has(.dupcap-onboarding__slide[data-step-id="done"]:not([hidden])) .dupcap-onboarding__prev,
+.dupcap-onboarding.is-page:has(.dupcap-onboarding__slide[data-step-id="done"]:not([hidden])) .dupcap-onboarding__prev {
+	display: none !important;
+}
+
+.dupcap-onboarding.is-overlay:has(.dupcap-onboarding__slide[data-step-id="done"]:not([hidden])) .dupcap-onboarding__footer,
+.dupcap-onboarding.is-page:has(.dupcap-onboarding__slide[data-step-id="done"]:not([hidden])) .dupcap-onboarding__footer {
+	justify-content: flex-end;
+}
+
+.dupcap-onboarding .dupcap-onboarding__finish {
+	display: inline-flex !important;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	background: #2563eb !important;
+	border-color: #2563eb !important;
+	color: #fff !important;
+	border-radius: 8px !important;
+	padding: 0 22px !important;
+	font-size: 14px !important;
+	font-weight: 600 !important;
+	height: 40px !important;
+	min-height: 40px !important;
+	box-shadow: none !important;
+}
+
+.dupcap-onboarding .dupcap-onboarding__finish:hover {
+	background: #1d4ed8 !important;
+	border-color: #1d4ed8 !important;
+}
+
+.dupcap-btn-arrow {
+	font-size: 15px;
+	line-height: 1;
+	display: inline-block;
+}
+
+@media (max-height: 860px) {
+	.dupcap-onboarding__slide[data-step-id="done"] {
+		min-height: 280px;
+	}
+
+	.dupcap-onboarding__done-wrapper {
+		padding: 28px 20px 36px;
+	}
+
+	.dupcap-onboarding__done-badge-glow {
+		width: 72px;
+		height: 72px;
+		margin-bottom: 20px;
+	}
+
+	.dupcap-onboarding__done-badge-circle {
+		width: 44px;
+		height: 44px;
+	}
+
+	.dupcap-onboarding__done-hero .dupcap-onboarding__title {
+		font-size: 22px;
+	}
+}
+
+

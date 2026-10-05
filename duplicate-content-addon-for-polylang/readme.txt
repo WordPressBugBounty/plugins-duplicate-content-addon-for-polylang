@@ -1,148 +1,158 @@
-﻿=== Polylang Duplicate Content Addon ===
-Contributors:khushwantsidhu
-Tags: Polylang, duplicate page, Automatic Translation, AI translation, Content duplication
-Requires at least:5.0
-Tested up to:7.0.2
-Requires PHP:7.2
-Stable tag:2.0.6
-Author URI:https://profiles.wordpress.org/khushwantsidhu/
-License:GPLv2 or later
-License URI:http://www.gnu.org/licenses/gpl-2.0.html
-Duplicate your original post/page content into other languages in one click with the Polylang Duplicate Content addon.
+﻿=== Toolkit for Polylang - Translation Inspector & Duplicate Content ===
+Contributors: narinder-singh, satindersingh, coolplugins
+Tags: Polylang, Automatic Translation, AI translation, Content duplication
+Requires at least: 5.0
+Tested up to: 7.1
+Requires PHP: 7.2
+Stable tag: 2.1.0
+License: GPLv2 or later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
+
+Scan your Polylang website for missing translations, URL issues, duplicate content, setup problems, and other multilingual errors from one dashboard.
 
 == Description ==
-**Polylang Duplicate Content addon** lets you quickly duplicate your original or default language post/page content into other languages. It makes the translation process faster and easier.
-Instead of adding featured images, galleries, or content again and again, you can just duplicate everything once and then only translate the text you need, saving time.
 
-== Automate Translation Using Polylang ==
+**Toolkit for Polylang - Translation Inspector & Duplicate Content** is a powerful WordPress plugin that helps you scan your multilingual website and find translation issues.
 
- **[AutoPoly - AI Translations For Polylang](https://coolplugins.net/product/autopoly-ai-translation-for-polylang/?utm_source=pdca_plugin&utm_medium=readme&utm_campaign=get_pro&utm_content=top_description)** effortlessly copies your original or default language post content and translates it into other languages, simplifying and speeding up the entire translation process.
+As a multilingual website owner you must already know that even when the main content is translated, problems like  **link to the wrong language**, **404 error**, **wrong Elementor template display**, **untranslated URLs** and more still goes unnoticed.
 
-https://youtu.be/ecHsOyIL_J4
+Toolkit for Polylang brings these checks together in one place. Just run a **scan**, **review the findings**, and understand **what need attention**.
 
-== Key Features ==
+### Key Features
 
-* **AI Automatic Translation –** Translate your Elementor & Gutenberg website content using Chrome's built-in AI. This feature enables real-time translation directly within the browser, without any paid API services.
+* **Multilingual Site Scan:** Scan your multilingual WordPress website built using Polylang for translation and configuration issues across supported content, languages, URLs, Polylang settings, Elementor setup, and other areas.
 
-* **Elementor Page Translation –** Translate entire Elementor pages, including all sections, widgets, and content, without losing styles or design.
+* **Issue Severity & Status**: Organizes scan results into Critical, Warning, Passed, and Ignored categories, making it easier to understand which issues need attention and which checks have passed.
 
-* **Gutenberg Block Compatibility –** Automatically translate content within Gutenberg blocks, including core blocks and popular third-party blocks like Spectra, Kadence, Stackable, Otter, and Essential.
+* **Missing Translation Detection**: Find supported posts, pages, and other content that are missing translations in one or more active Polylang languages. 
 
-* **Automatic Content Translation –** Effortlessly translate post titles, content, images, galleries, and meta fields from one language to another using Machine & AI Translations.
+* **URL & Routing Checks**: Review multilingual URLs and language routing for supported problems, including incorrect language URLs, broken links, and routes that results in 404 pages.
 
-* **ACF Fields Translation –** Translate ACF fields only with type(text, textarea & wysiwyg) in Gutenberg pages.
+* **Elementor Translation Checks**: Check Elementor pages and templates for supported multilingual and translation-related issues.
 
-* **One-Click Duplication –** Easily duplicate your original or default language content into other languages, saving time and reducing manual work.
+* **Translation Health Score**: Get an overall translation health score based on the results of your latest site scan, giving you a quick view of the current state of your multilingual website.
 
-* **Style and Format Preservation –** The plugin maintains all styles, formats, and layouts from the original post, ensuring that your translated content maintains a consistent appearance.
+* **Translation Coverage**: Review translation availability across your active Polylang languages and identify content that does or does not have corresponding language versions.
 
-* **Multilingual Management –** Simplifies the process of managing a multilingual website by automating translation and reducing the need for repetitive actions.
+* **Issue Rescanning**: Rescan individual issues or completed website after making changes to check whether they have been resolved.
 
-* **Custom Block Support –** While optimized for Gutenberg blocks, the plugin also works with several third-party block plugins, extending its versatility.
+* **Duplicate Content**: Duplicate your pages/posts and make them available for translation via Polylang.
 
-* **Easy to Use –** Designed with a user-friendly interface, making it accessible even for those with limited technical knowledge.
+* **Privacy-Friendly Inspection:** Toolkit for Polylang performs its core checks using information available within your WordPress installation. The plugin does not send your website content to an external service to perform its core inspection.
 
-### Our Advanced Language Switcher Plugins
+* Lightweight & Easy to Use.
 
-* **[Language Switcher – Polylang for Divi](https://wordpress.org/plugins/language-switcher-for-divi-polylang):** Add a customizable language switcher to your website inside the Divi Builder using Polylang.
+* Fully Responsive.
 
-* **[Language Switcher for Elementor & Polylang](https://go.coolplugins.net/language-switcher):** Add a powerful language switcher to your website and easily translate Elementor Templates.
+### Tools & Addons for Polylang
+Toolkit for Polylang plugin includes two main tools:
 
-### Check out our advanced Automatic Translate Addon 
+## Built-In Tools
 
-* **[LocoAI – Auto Translate for Loco Translate](https://locoaddon.com/?utm_source=pdca_plugin&utm_medium=readme&utm_campaign=get_pro&utm_content=atlt_check_out)** is an addon that enhances the functionality of the Loco Translate plugin by enabling the automatic translation of WordPress themes and plugins. This addon connects with sources like Google, Yandex, DeepL, or AI-powered sources like ChatGPT, Gemini AI, and Chrome AI to provide instant and automated translations.
+* **Translation Inspector**: Scans your multilingual website and helps identify translation, setup, routing, coverage, and related issues.
 
-* **[AI Translation for TranslatePress](https://coolplugins.net/product/automatic-translate-addon-for-translatepress-pro/?utm_source=pdca_plugin&utm_medium=readme&utm_campaign=get_pro&utm_content=tpa_check_out)** is a powerful addon that enhances the functionality of the TranslatePress plugin. This addon uses advanced translation services, like Google Translate, Yandex, and Chrome AI translator, to provide accurate and instant translations for your web pages automatically.
+* **Duplicate Content**: Duplicates your pages/posts content and make it available for translation via Polylang.
 
-**Use of 3rd Party Services:** This plugin connects to the Cool Plugins feedback server only for optional usage data sharing and voluntary feedback submission (for example, during plugin deactivation). Data is transmitted solely after explicit user consent. No hidden tracking is performed, and no frontend visitor or site user data is collected.  For more details, please review our [Data Usage Policy](https://my.coolplugins.net/terms/usage-tracking/), [TOS](https://my.coolplugins.net/terms/), and [Privacy Policy](https://my.coolplugins.net/terms/privacy-policy/).
+## Polylang Addons
 
-> This plugin is not developed by or affiliated with the "**Polylang developers**". It is a third-party addon that provides duplicate content functionality to quickly translate your post with the same styles into other languages.
+Toolkit for Polylang works as part of a broader Polylang workflow. You can optionally use the following addons with it.
 
-== Screenshots ==
-1. Duplicate content preview in classic editor
-2. Duplicate content preview in Gutenberg Block Editor.
-3. Automatic Translations For Polylang Preview.
-3. Google Chrome AI automatic Translation Preview.
+* **[AI Translation for Polylang](https://coolplugins.net/product/autopoly-ai-translation-for-polylang/)**: Automate the translation process using Polylang. It works by integrating AI translation providers with Polylang plugin and allowing you to translate pages built using Gutenberg, Elementor, or Divi.
+
+* **[Language Switcher for Polylang](https://wordpress.org/plugins/language-switcher-for-divi-polylang/)**: Add a floating language switcher or standard language switcher to your multilingual Elementor, Gutenberg or Divi websites.
+
+### Check out our other Plugins
+
+* **[AI Translation for TranslatePress](https://coolplugins.net/product/automatic-translate-addon-for-translatepress-pro/?utm_source=dupcap_plugin&utm_medium=readme&utm_campaign=get_pro&utm_content=tpa_other_plugins)**: Powerful TranslatePress addon that enhances the functionality of the TranslatePress plugin. This addon uses advanced translation services, like Google Translate, Yandex, and Chrome AI translator, to provide accurate and instant translations for your web pages automatically.
+
+* **[Linguator – Multilingual AI Translation](https://wordpress.org/plugins/translate-words/)**: It is a powerful multilingual plugin that helps you create and manage multilingual content on your WordPress website. Easily translate your posts, pages, menus, and categories into different languages using AI and connect with visitors worldwide.
+
+* **[AutoMLP – AI Translation for WPML](https://coolplugins.net/product/automlp-ai-translation-for-wpml/?utm_source=dupcap_plugin&utm_medium=readme&utm_campaign=get_pro&utm_content=automlp_other_plugins)**: AutoMLP is an WPML automatic translation addon. It allows you to translate your WordPress website using different AI services like OpenAI, Google Gemini, or Chrome AI at low cost.
+
+* **[LocoAI – Auto Translate for Loco Translate](https://locoaddon.com/?utm_source=dupcap_plugin&utm_medium=readme&utm_campaign=get_pro&utm_content=atlt_other_plugins)**: It is an addon that enhances the functionality of the Loco Translate plugin by enabling the automatic translation of WordPress themes and plugins. This addon connects with sources like Google, Yandex, DeepL, or AI-powered sources like ChatGPT, Gemini AI and Chrome built-in AI to provide instant and automated translations.
+
+== Screenshots == 
+1. Multilingual Website Issue Scan
+2. Configure Multilingual Issues
 
 == Installation ==
-To install and set up Polylang Duplicate Content addon, please follow these steps:
-
-**Install and Activate Polylang:**
-
-* Navigate to your WordPress dashboard.
-* Go to Plugins > Add New.
-* Search for “Polylang“.
-* Click Install Now and then Activate the Polylang plugin.
-
-**Install Polylang Duplicate Content addon:**
-
-* In the WordPress dashboard, go to Plugins > Add New.
-* Search for “Polylang Duplicate Content addon“.
-* Click Install Now next to the plugin.
-
-**Activate the Plugin:**
-
-* After installation, click Activate to enable Polylang Duplicate Content addon on your site.
-
-Your plugin is now ready to use. You can access its settings and begin translating your content automatically.
+* First, make sure that you have installed and activated the **Toolkit for Polylang - Translation Inspector & Duplicate Content** plugin on your WordPress website.
+* After activation, the setup wizard will open, here, select the tools you want to use on your multilingual website:
+  * **Translation Inspector** and **Duplicate Content Check** are built-in features of Toolkit for Polylang.
+  * **AutoPoly** and **Language Switcher for Polylang** are available as additional options when their respective plugins are already installed and activated.
+* Click Continue to complete the setup.
+* Once the setup is complete, run your first scan to check your multilingual website for translation and configuration issues.
 
 == Frequently Asked Questions ==
 
-= What is the Polylang Duplicate Content Addon? = 
-The Polylang Duplicate Content Addon is a WordPress plugin designed to reduce your translation workload by duplicating the original or default language content into other languages. It simplifies translating posts and pages while retaining all formatting, images, and meta fields.  
+= What is Translation Inspector for Polylang? =
 
-= How does this addon help with translations? =
-This addon duplicates titles, content, images, galleries, and meta fields from your original language post to other languages. By automating these repetitive tasks, it allows you to focus on translating the necessary text elements only.  
+Toolkit for Polylang is a WordPress addon for Polylang that helps you scan a multilingual website for translation-related issues, missing language versions, setup problems, duplicate content, routing issues, and other multilingual problems.
 
-= Is this plugin compatible with Gutenberg blocks? =
-Yes, the plugin is fully compatible with Gutenberg blocks, including core blocks and popular third-party block plugins like Spectra, Kadence, Stackable, Otter, and Essential.
+= Does Translation Inspector replace Polylang? =
 
-= Can I use this plugin without creating a Yandex account? =
-Yes, the plugin allows you to use the Yandex Translate API for automatic translations without needing to create a separate Yandex account.  
+No. Toolkit for Polylang plugin is an addon for Polylang. It works with Polylang to help you find and troubleshoot translation issues that are difficult to track.
 
-= Does it support style and format preservation? =
-Absolutely! The plugin ensures that all styles, layouts, and formatting are preserved when duplicating content, so your translated posts look consistent with the original.
+= What does Translation Inspector check? =
+Translation Inspector checks your multilingual WordPress website for common translation, content, configuration, and routing issues, including:
+* **Menu health:** Checks multilingual menu assignments and related menu issues.
+* **Template / Header / Footer health:** Checks translation-related issues with templates, headers, and footers.
+* **Missing translations:** Finds supported pages, posts, and other content that are missing translations.
+* **URL / Routing health:** Checks multilingual URLs, language routing, and supported URL-related issues.
+* **Elementor display conditions:** Checks Elementor display-condition issues that can affect multilingual templates such as headers and footers.
+* **FSE Navigation:** Checks navigation-related multilingual issues in block themes and the WordPress Site Editor.
+* **Wrong-language links:** Detects supported links that point to content in the wrong language.
+* **String translations:** Checks for missing or untranslated Polylang strings.
+* **CPT / Taxonomy health:** Checks custom post types, taxonomies, and their translation coverage.
+* **Sync / Content-loss protection:** Helps identify supported translation synchronization or content-update risks.
+* **Dead menu links:** Detects menu items that point to missing, draft, or private content.
 
-= Is Polylang Duplicate Content Addon developed by Polylang developers? =
-No, this plugin is not developed or affiliated with the official Polylang developers. It is a third-party addon designed to enhance the Polylang experience by providing duplicate content functionality.
+= Does Toolkit for Polylang automatically translate my website? =
 
-= Does the plugin work with other translation addons? =
-Yes, it works seamlessly with **[AutoPoly - AI Translation For Polylang](https://coolplugins.short.gy/ai-translation-for-polylang)** to further automate and simplify your translation workflow.  
+No, Toolkit for Polylang is primarily an inspection and troubleshooting tool. However, if AutoPoly is installed and activated on your website along with Toolkit for Polylang, you can easliy translate your untranslated website content automatically.
 
-= Can I duplicate custom post types and custom fields? =
-Yes, the plugin supports duplicating custom post types, custom fields, and all associated meta fields.
+= What is a critical issue? =
 
-= How can I start using the Polylang Duplicate Content Addon? =
-Install the addon on your WordPress site, configure the settings, and use the one-click duplication feature to replicate your original language content into other languages.  
+A critical issue is a problem that have a stronger impact on the multilingual visitor experience.
 
-= What does the "AutoPoly - AI Translation For Polylang" plugin do? =  
-This plugin automatically copies and translates your posts, including titles, content, images, galleries, and meta fields, from one language to another using powerful translation providers. 
+For example, an important page that is missing in one or more languages may need attention before a lower-priority warning.
 
-= Do I need a Yandex Translate account to use this plugin? =  
-No, you do not need a Yandex Translate account to use this plugin. However, the translation services are powered by the Yandex Translate API, which is subject to Yandex's terms of service and usage limits.
+= What is the Translation Health Score? =
 
-= Can I use this plugin with custom blocks or themes? =  
-This plugin is designed to work with core Gutenberg blocks and several popular third-party blocks (e.g., Spectra, Kadence, Stackable, Otter, and Essential). While it may work with custom blocks or themes, compatibility is not guaranteed, and testing is recommended.
+The Translation Health Score gives you a quick overview based on the checks completed during the website scan.
 
-= Does the plugin translate all content on my website? =  
-The plugin automatically translates the content within Gutenberg blocks. It does not translate content outside of these blocks, such as custom widgets, shortcodes, or other plugins' content that doesn't utilize Gutenberg blocks.
+= Can I ignore an issue? =
+Yes. If an issue is intentional or does not need action on your website, you can ignore it.
 
-= How do I manage the translated content? =  
-The translated content is managed within the WordPress editor, just like your original content. The plugin duplicates your content into other languages, which you can then review and adjust as needed.
+= Can I check an issue again after fixing it? =
+Yes. Using **Rescan Issue** option you can run another complete website scan.
 
-= Can I undo the automatic translations if needed? =  
-Yes, you can manually edit or remove the translated content in the WordPress editor after it has been automatically translated.
+= What does Duplicate Content do? =
+It duplicate your pages/posts and make them available for translation via Polylang.
 
-= What if the translation quality is not accurate? =  
-While the plugin uses the AI-powered translation providers for automatic translations, you can still manually adjust the translated content within the WordPress editor to ensure accuracy.
+= Do I need AI Translation or Language Switcher plugin? =
+No. AI Translation and Language Switcher plugins are optional. If these are installed and actived, Toolkit for Polylang can use the integration to provide AI Translation actions for automatic content translation and language switcher functionality for your multilingual website.
 
-= How do I update the plugin to the latest version? =  
-You can update the plugin through the WordPress dashboard like any other plugin. Regular updates will ensure you have the latest features and security improvements.
+= Does scanning change my website automatically? =
+The scan is intended to inspect your multilingual website and report issues.
+Changes are made only when you intentionally use an available action, such as editing content or changing a setting.
+
+= Can I export the scan results? =
+Yes. Use the **Export Report** option from the Toolkit for Polylang dashboard.
+
+= Is this plugin developed by the Polylang team? =
+No. Toolkit for Polylang for Polylang is a third-party addon and is not developed by or affiliated with the official Polylang developers.
 
 = How can I report security bugs? =
-You can report security bugs through the Patchstack Vulnerability Disclosure Program. The Patchstack team help validate, triage and handle any security vulnerabilities. [Report a security vulnerability.](https://patchstack.com/database/vdp/duplicate-content-addon-for-polylang).
+
+You can report security bugs through the Patchstack Vulnerability Disclosure Program. The Patchstack team help validate, triage and handle any security vulnerabilities. [Report a security vulnerability](https://patchstack.com/database/vdp/a1445575-35c8-4414-a9f7-55ab64f28711).
 
 == Changelog ==
+
+= Version 2.1.0 | 05 Oct 2026 =
+- **Added:** Multilingual site scanning to detect potential translation and configuration issues.
+- **Improvements:** Code quality, performance, and overall plugin optimization.
+- **Tested Up to:** WordPress 7.1.2 and Polylang 3.8.10.
 
 = Version 2.0.6 | 17 Aug 2026 =
 - **Added:** Language switcher plugin recommendations for Polylang user.

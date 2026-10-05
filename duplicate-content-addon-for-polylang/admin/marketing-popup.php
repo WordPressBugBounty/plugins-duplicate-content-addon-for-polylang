@@ -31,41 +31,7 @@ class Dupcap_Marketing_Popup {
 
 		add_action( 'admin_footer', array( $this, 'dupcap_output_modal_in_footer' ) );
 		add_action( 'wp_ajax_dupcap_install_plugin', array( $this, 'dupcap_install_plugin' ) );
-        add_action( 'manage_posts_extra_tablenav', array( $this, 'dupcap_add_autotranslate_button' ) );
 	}
-
-    /**
-     * Add Autotranslate button to the post list table.
-     *
-     * @param string $which The position of the table nav (top or bottom).
-     */
-    public function dupcap_add_autotranslate_button( $which ) {
-        
-        if ( $which !== 'top' ) {
-            return;
-        }
-    
-        $screen = get_current_screen();
-        if ( ! $screen || 'edit' !== $screen->base ) {
-            return;
-        }
-    
-        // Only if Autopoly is NOT active (neither Free nor Pro)
-        $is_pro_active   = defined( 'ATFPP_V' );
-        $is_free_active  = defined( 'ATFP_V' );
-        
-        if ( get_option( 'dupcap-atp-notice' ) !== 'yes' || $is_pro_active || $is_free_active ) {
-            return;
-        }
-    
-        ?>
-        <div class="alignleft actions">
-            <a href="https://coolplugins.net/product/autopoly-ai-translation-for-polylang/?utm_source=pdca_plugin&utm_medium=inside&utm_campaign=view_plugin&utm_content=all_pages" target="_blank" class="button button-primary" style="display:flex; align-items:center; gap:5px; margin-top: 1px;">
-                <?php esc_html_e( 'AI Translation', 'duplicate-content-addon-for-polylang' ); ?>
-            </a>
-        </div>
-        <?php
-    }
 
     /**
      * Handle AJAX request to install or activate a plugin.
@@ -74,12 +40,6 @@ class Dupcap_Marketing_Popup {
 
 		check_ajax_referer('dupcap_install_nonce', '_wpnonce');
 
-        if (! current_user_can('install_plugins')) {
-            wp_send_json_error([
-                'errorMessage' => esc_html__('Sorry, you are not allowed to install plugins on this site.', 'duplicate-content-addon-for-polylang'),
-            ]);
-        }
-					
 		if (empty($_POST['slug'])) {
             wp_send_json_error([
                 'slug'         => '',
@@ -92,8 +52,10 @@ class Dupcap_Marketing_Popup {
 					
 		$allowed_slugs = [
 			'autopoly-ai-translation-for-polylang-pro',
+			'autopoly-ai-translation-for-polylang',
 			'automatic-translations-for-polylang',
 			'language-switcher-for-divi-polylang',
+			'connect-polylang-elementor',
 		];
 
 		if ( ! in_array( $plugin_slug, $allowed_slugs, true ) ) {
@@ -105,13 +67,30 @@ class Dupcap_Marketing_Popup {
 		}
 
         $plugin_action = isset( $_POST['plugin_action'] ) ? sanitize_key( wp_unslash( $_POST['plugin_action'] ) ) : 'install';
+		if ( ! in_array( $plugin_action, array( 'install', 'activate' ), true ) ) {
+			$plugin_action = 'install';
+		}
+
+		if ( 'activate' === $plugin_action ) {
+			if ( ! current_user_can( 'activate_plugins' ) ) {
+				wp_send_json_error([
+					'errorMessage' => esc_html__( 'Sorry, you are not allowed to activate plugins on this site.', 'duplicate-content-addon-for-polylang' ),
+				]);
+			}
+		} elseif ( ! current_user_can( 'install_plugins' ) ) {
+            wp_send_json_error([
+                'errorMessage' => esc_html__('Sorry, you are not allowed to install plugins on this site.', 'duplicate-content-addon-for-polylang'),
+            ]);
+        }
+
             $status = [
                 'action' => $plugin_action,
                 'slug'   => $plugin_slug,
             ];
 		
-        // If user is installing/activating Autopoly, consider the persistent notice dismissed
-        update_option( 'cpel_autopoly_installed', 'dupcap' );
+        if ( in_array( $plugin_slug, array( 'autopoly-ai-translation-for-polylang-pro', 'autopoly-ai-translation-for-polylang', 'automatic-translations-for-polylang' ), true ) ) {
+            update_option( 'cpel_autopoly_installed', 'dupcap' );
+        }
 
         require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
         require_once ABSPATH . 'wp-admin/includes/plugin-install.php';
@@ -119,19 +98,14 @@ class Dupcap_Marketing_Popup {
                     
         // Handle Activation Request
         if ( $plugin_action === 'activate' ) {
-			if (! current_user_can('activate_plugins')) {
-				wp_send_json_error(['message' => 'Permission denied']);
-			}
-
-			$plugin_file = $this->find_main_plugin_file( $plugin_slug );
+			$plugin_file = $this->resolve_plugin_file( $plugin_slug );
                                 
 			if ($plugin_file) {
-				$network_wide = is_multisite();
-				$result       = activate_plugin($plugin_file, '', $network_wide, true);
+				$result = $this->activate_plugin_quietly( $plugin_file );
 				if (is_wp_error($result)) {
 					wp_send_json_error(['message' => $result->get_error_message()]);
 				}
-				wp_send_json_success(['message' => 'Plugin activated successfully']);
+				wp_send_json_success(['message' => 'Plugin activated successfully', 'activated' => true]);
 			} else {
 				wp_send_json_error(['message' => 'Plugin file not found.']);
 			}
@@ -162,9 +136,8 @@ class Dupcap_Marketing_Popup {
 
         } elseif (is_wp_error($skin->result)) {
             if ($skin->result->get_error_message() === 'Destination folder already exists.') {
-                // Already installed, ready to activate
-                $status['activated'] = false; 
-                wp_send_json_success($status);
+                // Already on disk — fall through and activate in this same request.
+                $status['alreadyInstalled'] = true;
             } else {
                 $status['errorCode']    = $skin->result->get_error_code();
                 $status['errorMessage'] = $skin->result->get_error_message();
@@ -192,12 +165,11 @@ class Dupcap_Marketing_Popup {
         }
 
         if ( empty( $plugin_file_to_activate ) ) {
-            $plugin_file_to_activate = $this->find_main_plugin_file( $plugin_slug );
+            $plugin_file_to_activate = $this->resolve_plugin_file( $plugin_slug );
         }
 
-        if ( ! empty( $plugin_file_to_activate ) ) {
-            $network_wide = is_multisite();
-            $activation_result = activate_plugin($plugin_file_to_activate, '', $network_wide);      
+        if ( ! empty( $plugin_file_to_activate ) && current_user_can( 'activate_plugins' ) ) {
+            $activation_result = $this->activate_plugin_quietly( $plugin_file_to_activate );
             if ( is_wp_error( $activation_result ) ) {
                     $status['errorMessage'] = 'Activation Error: ' . $activation_result->get_error_message();
                     $status['activated'] = false;
@@ -211,6 +183,71 @@ class Dupcap_Marketing_Popup {
         }           
 
         wp_send_json_success($status);
+    }
+
+    /**
+     * Activate a plugin on this site (hooks run; no network-wide flag).
+     *
+     * AutoPoly (and siblings) register a welcome redirect on include during
+     * activate_plugin(), then exit. Abort that redirect on AJAX so JSON can
+     * still be sent. Silent mode is not used.
+     *
+     * @param string $plugin_file Plugin basename.
+     * @return null|\WP_Error
+     */
+    private function activate_plugin_quietly( $plugin_file ) {
+        $block_redirect = static function ( $location ) {
+            if ( function_exists( 'wp_doing_ajax' ) && wp_doing_ajax() ) {
+                // Throw before the caller's exit so activate_plugin can return.
+                throw new Exception( 'dupcap_ajax_activate_redirect' );
+            }
+            return $location;
+        };
+
+        add_filter( 'wp_redirect', $block_redirect, 1 );
+
+        try {
+            // Always site-level. Network-wide activation requires manage_network_plugins
+            // (super admin); is_multisite() alone must not escalate a site admin.
+            $result = activate_plugin( $plugin_file, '', false, false );
+        } catch ( Exception $e ) {
+            remove_filter( 'wp_redirect', $block_redirect, 1 );
+            if ( 'dupcap_ajax_activate_redirect' !== $e->getMessage() ) {
+                throw $e;
+            }
+            return null;
+        }
+
+        remove_filter( 'wp_redirect', $block_redirect, 1 );
+
+        return $result;
+    }
+
+    /**
+     * Resolve the main plugin file from a slug or optional posted init path.
+     *
+     * @param string $slug Plugin directory slug.
+     * @return string|false
+     */
+    private function resolve_plugin_file( $slug ) {
+        $init = '';
+        // Nonce verified in dupcap_install_plugin().
+        // phpcs:disable WordPress.Security.NonceVerification.Missing
+        if ( ! empty( $_POST['init'] ) ) {
+            $init = plugin_basename( sanitize_text_field( wp_unslash( $_POST['init'] ) ) );
+            // phpcs:enable
+            $is_in_slug_dir = strpos( $init, $slug . '/' ) === 0;
+            $is_root_file   = $init === $slug . '.php';
+            if ( ! $is_in_slug_dir && ! $is_root_file ) {
+                $init = '';
+            }
+        }
+
+        if ( $init && file_exists( WP_PLUGIN_DIR . '/' . $init ) ) {
+            return $init;
+        }
+
+        return $this->find_main_plugin_file( $slug );
     }
 
     /**
@@ -300,6 +337,16 @@ class Dupcap_Marketing_Popup {
      * Output the marketing modal in the admin footer.
      */
     public function dupcap_output_modal_in_footer() {
+		if ( class_exists( 'duplicateContentAddon' ) && ! duplicateContentAddon::is_polylang_available() ) {
+			return;
+		}
+
+		// Duplicate Content switched off in setup: never offer to copy content.
+		// This modal is hooked on admin_footer from dupcap_includes(), so the
+		// gate in dupcap_init() does not reach it.
+		if ( function_exists( 'dupcap_is_tool_enabled' ) && ! dupcap_is_tool_enabled( 'duplicate' ) ) {
+			return;
+		}
 
 		$screen = get_current_screen();
         
@@ -476,11 +523,11 @@ class Dupcap_Marketing_Popup {
                              $free_path = WP_PLUGIN_DIR . '/automatic-translations-for-polylang/automatic-translation-for-polylang.php';
                           
                              if ( file_exists( $pro_path ) ) {
-                                  $btn_text_action =    __('Activate AutoPoly Pro', 'duplicate-content-addon-for-polylang');
+                                  $btn_text_action =    __('Activate', 'duplicate-content-addon-for-polylang');
                                   $btn_slug = 'autopoly-ai-translation-for-polylang-pro';
                                   $btn_action = 'activate';
                              } elseif ( file_exists( $free_path ) ) {
-                                  $btn_text_action = __('Activate AutoPoly', 'duplicate-content-addon-for-polylang');
+                                  $btn_text_action = __('Activate', 'duplicate-content-addon-for-polylang');
                                   if ( file_exists( $free_path ) ) {
                                       $btn_slug = 'automatic-translations-for-polylang';
                                   } 

@@ -1,6 +1,6 @@
 /**
  * Dupcap Marketing Popup
- * Handles modal interactions, plugin installation/activation, and admin notice dismissal.
+ * Handles modal interactions and plugin installation/activation.
  */
 class DupcapMarketingPopup {
 
@@ -20,8 +20,7 @@ class DupcapMarketingPopup {
             overlay: '.dupcap-modal-overlay',
             warningWrapper: '.atfp-modal-open-warning-wrapper',
             installBtn: '.dupcap-install-plugin',
-            copyBtn: '.dupcap-copy-button',
-            dismissBtn: '.lsdp-card-wrapper .notice-dismiss, .lsdp-card-wrapper .dupcap-dismiss-btn'
+            copyBtn: '.dupcap-copy-button'
         };
     }
 
@@ -33,40 +32,6 @@ class DupcapMarketingPopup {
         this.bindEvents();
         this.syncTranslateBtnText();
         this.checkAutoOpen();
-        this.injectLsdpNotice();
-    }
-
-    /**
-     * Move LSDP promo notice into Polylang Languages metabox (hidden until placed).
-     */
-    injectLsdpNotice() {
-        const $notice = this.$('#dupcap-lsdp-ml-box-notice');
-        if (!$notice.length) {
-            return;
-        }
-
-        const tryInject = () => {
-            const $target = this.$('#ml_box .inside');
-            if (!$target.length) {
-                return false;
-            }
-            $target.append($notice.show());
-            return true;
-        };
-
-        if (tryInject()) {
-            return;
-        }
-
-        let tries = 0;
-        const timer = setInterval(() => {
-            if (tryInject() || ++tries > 20) {
-                clearInterval(timer);
-                if (tries > 20) {
-                    $notice.remove();
-                }
-            }
-        }, 500);
     }
 
     /**
@@ -131,11 +96,6 @@ class DupcapMarketingPopup {
         // Copy Content Button
         this.$(document).on('click', this.selectors.copyBtn, function (e) {
             self.handleCopyContent(e, self.$(this));
-        });
-
-        // Notice Dismissal
-        this.$(document).on('click', this.selectors.dismissBtn, function (e) {
-            self.handleDismissNotice(e, self.$(this));
         });
 
     }
@@ -218,7 +178,7 @@ class DupcapMarketingPopup {
         e.preventDefault();
 
         const self = this;
-        const $wrapper = $btn.closest('.dupcap-marketing-card, .lsdp-card-wrapper');
+        const $wrapper = $btn.closest('.dupcap-marketing-card');
         const slug = $btn.data('slug');
         const nonce = $btn.data('nonce');
         let action = $btn.data('action') || 'install';
@@ -234,7 +194,7 @@ class DupcapMarketingPopup {
             return;
         }
 
-        const validSlugs = ['automatic-translations-for-polylang', 'autopoly-ai-translation-for-polylang-pro', 'language-switcher-for-divi-polylang'];
+        const validSlugs = ['automatic-translations-for-polylang', 'autopoly-ai-translation-for-polylang', 'autopoly-ai-translation-for-polylang-pro', 'language-switcher-for-divi-polylang', 'connect-polylang-elementor'];
         if (!validSlugs.includes(slug)) {
             $msgContainer.text('Invalid Plugin Slug');
             return;
@@ -270,9 +230,9 @@ class DupcapMarketingPopup {
         const $msgContainer = $wrapper.find('.dupcap-install-message');
         const self = this;
 
-        // Success Check (Explicit success or HTML redirect)
-        const isSuccess = (response && response.success) ||
-            (typeof response === 'string' && (response.includes('<!DOCTYPE html') || response.includes('<html')));
+        // Only an explicit wp_send_json_success payload counts. An HTML redirect
+        // or error page must not be treated as "Activated!".
+        const isSuccess = !!( response && response.success === true );
 
         if (isSuccess) {
 
@@ -286,8 +246,6 @@ class DupcapMarketingPopup {
 
                 if (self.shouldReloadPage()) {
                     setTimeout(() => location.reload(), 1000);
-                } else if ($wrapper.hasClass('lsdp-card-wrapper')) {
-                    setTimeout(() => $wrapper.closest('.notice').slideUp(), 1000);
                 }
                 return;
             }
@@ -342,45 +300,6 @@ class DupcapMarketingPopup {
         }
 
         window.location.href = window.location.pathname + '?' + urlParams.toString();
-    }
-
-    /**
-     * Handle Admin Notice Dismissal
-     */
-    handleDismissNotice(e, $btn) {
-        e.preventDefault();
-        e.stopPropagation();
-
-        const $parentWrapper = $btn.closest('.lsdp-card-wrapper');
-        const nonce = $parentWrapper.data('nonce');
-        const url = $parentWrapper.data('url');
-        const noticeOption = $parentWrapper.data('notice') || 'dupcap-atp-notice';
-
-        if (!nonce || !url) return;
-
-        // Hide immediately (sidebar has no WP core is-dismissible handler).
-        $parentWrapper.slideUp(200, function () {
-            $parentWrapper.remove();
-        });
-
-        // Also hide matching admin notice if both are present.
-        this.$('.lsdp-card-wrapper[data-notice="' + noticeOption + '"]').not($parentWrapper).slideUp(200, function () {
-            jQuery(this).remove();
-        });
-
-        this.$.ajax({
-            type: 'POST',
-            url: url,
-            data: {
-                action: 'dupcap_notice_dismiss',
-                dupcap_atp_dismiss: true,
-                notice_option: noticeOption,
-                nonce: nonce,
-            },
-            error: function () {
-                // Silently fail - user can still use the plugin
-            }
-        });
     }
 }
 
