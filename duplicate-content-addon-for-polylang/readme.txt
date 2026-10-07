@@ -1,16 +1,18 @@
 ﻿=== Toolkit for Polylang - Translation Inspector & Duplicate Content ===
 Contributors: narinder-singh, satindersingh, coolplugins
-Tags: Polylang, Automatic Translation, AI translation, Content duplication
+Tags: Polylang, multilingual, translation, translation issues, Elementor
 Requires at least: 5.0
 Tested up to: 7.1
 Requires PHP: 7.2
-Stable tag: 2.1.0
+Stable tag: 2.1.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Scan your Polylang website for missing translations, URL issues, duplicate content, setup problems, and other multilingual errors from one dashboard.
+Scan your Polylang website for missing translations, URL issues, setup problems and other multilingual errors from one dashboard and fix quickly.
 
 == Description ==
+
+https://youtu.be/WS3fl6sjgOE?si=5p-te4LIlN_7SHZi
 
 **Toolkit for Polylang - Translation Inspector & Duplicate Content** is a powerful WordPress plugin that helps you scan your multilingual website and find translation issues.
 
@@ -28,7 +30,7 @@ Toolkit for Polylang brings these checks together in one place. Just run a **sca
 
 * **URL & Routing Checks**: Review multilingual URLs and language routing for supported problems, including incorrect language URLs, broken links, and routes that results in 404 pages.
 
-* **Elementor Translation Checks**: Check Elementor pages and templates for supported multilingual and translation-related issues.
+* **Elementor Translation Checks**: Detect multilingual issues with Elementor headers, footers, templates, and display conditions that can cause the wrong template to appear on translated pages.
 
 * **Translation Health Score**: Get an overall translation health score based on the results of your latest site scan, giving you a quick view of the current state of your multilingual website.
 
@@ -57,7 +59,7 @@ Toolkit for Polylang plugin includes two main tools:
 
 Toolkit for Polylang works as part of a broader Polylang workflow. You can optionally use the following addons with it.
 
-* **[AI Translation for Polylang](https://coolplugins.net/product/autopoly-ai-translation-for-polylang/)**: Automate the translation process using Polylang. It works by integrating AI translation providers with Polylang plugin and allowing you to translate pages built using Gutenberg, Elementor, or Divi.
+* **[AI Translation for Polylang](https://coolplugins.net/product/autopoly-ai-translation-for-polylang/?utm_source=dupcap_plugin&utm_medium=readme&utm_campaign=get_pro&utm_content=atfp_other_plugins)**: Automate the translation process using Polylang. It works by integrating AI translation providers with Polylang plugin and allowing you to translate pages built using Gutenberg, Elementor, or Divi.
 
 * **[Language Switcher for Polylang](https://wordpress.org/plugins/language-switcher-for-divi-polylang/)**: Add a floating language switcher or standard language switcher to your multilingual Elementor, Gutenberg or Divi websites.
 
@@ -71,9 +73,10 @@ Toolkit for Polylang works as part of a broader Polylang workflow. You can optio
 
 * **[LocoAI – Auto Translate for Loco Translate](https://locoaddon.com/?utm_source=dupcap_plugin&utm_medium=readme&utm_campaign=get_pro&utm_content=atlt_other_plugins)**: It is an addon that enhances the functionality of the Loco Translate plugin by enabling the automatic translation of WordPress themes and plugins. This addon connects with sources like Google, Yandex, DeepL, or AI-powered sources like ChatGPT, Gemini AI and Chrome built-in AI to provide instant and automated translations.
 
-== Screenshots == 
+== Screenshots ==
 1. Multilingual Website Issue Scan
 2. Configure Multilingual Issues
+3. Automatic Translation.
 
 == Installation ==
 * First, make sure that you have installed and activated the **Toolkit for Polylang - Translation Inspector & Duplicate Content** plugin on your WordPress website.
@@ -109,7 +112,7 @@ Translation Inspector checks your multilingual WordPress website for common tran
 
 = Does Toolkit for Polylang automatically translate my website? =
 
-No, Toolkit for Polylang is primarily an inspection and troubleshooting tool. However, if AutoPoly is installed and activated on your website along with Toolkit for Polylang, you can easliy translate your untranslated website content automatically.
+No, Toolkit for Polylang is primarily an inspection and troubleshooting tool. However, if AutoPoly is installed and activated on your website along with Toolkit for Polylang, you can easily translate your untranslated website content automatically.
 
 = What is a critical issue? =
 
@@ -131,23 +134,23 @@ Yes. Using **Rescan Issue** option you can run another complete website scan.
 It duplicate your pages/posts and make them available for translation via Polylang.
 
 = Do I need AI Translation or Language Switcher plugin? =
-No. AI Translation and Language Switcher plugins are optional. If these are installed and actived, Toolkit for Polylang can use the integration to provide AI Translation actions for automatic content translation and language switcher functionality for your multilingual website.
+No. AI Translation and Language Switcher plugins are optional. If these are installed and activated, Toolkit for Polylang can use the integration to provide AI Translation actions for automatic content translation and language switcher functionality for your multilingual website.
 
 = Does scanning change my website automatically? =
 The scan is intended to inspect your multilingual website and report issues.
 Changes are made only when you intentionally use an available action, such as editing content or changing a setting.
-
-= Can I export the scan results? =
-Yes. Use the **Export Report** option from the Toolkit for Polylang dashboard.
 
 = Is this plugin developed by the Polylang team? =
 No. Toolkit for Polylang for Polylang is a third-party addon and is not developed by or affiliated with the official Polylang developers.
 
 = How can I report security bugs? =
 
-You can report security bugs through the Patchstack Vulnerability Disclosure Program. The Patchstack team help validate, triage and handle any security vulnerabilities. [Report a security vulnerability](https://patchstack.com/database/vdp/a1445575-35c8-4414-a9f7-55ab64f28711).
+You can report security bugs through the Patchstack Vulnerability Disclosure Program. The Patchstack team help validate, triage and handle any security vulnerabilities. [Report a security vulnerability.]( https://patchstack.com/database/vdp/192d452d-4702-4ef9-a7b1-693738911de8 ).
 
 == Changelog ==
+
+= Version 2.1.1 | 07 Oct 2026 =
+- **Fixed:** Minor issues and improvements.
 
 = Version 2.1.0 | 05 Oct 2026 =
 - **Added:** Multilingual site scanning to detect potential translation and configuration issues.
@@ -228,5 +231,5 @@ You can report security bugs through the Patchstack Vulnerability Disclosure Pro
 - **New:** Initial Plugin Release
 
 == Upgrade Notice ==
-= Version 2.0.6 | 17 Aug 2026 =
-- **Added:** Language switcher plugin recommendations for Polylang user.
+= Version 2.1.0 | 05 Oct 2026 =
+- **Added:** Multilingual site scanning to detect potential translation and configuration issues.
