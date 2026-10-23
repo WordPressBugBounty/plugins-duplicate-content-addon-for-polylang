@@ -12,7 +12,7 @@ Scan your Polylang website for missing translations, URL issues, setup problems 
 
 == Description ==
 
-https://youtu.be/WS3fl6sjgOE?si=5p-te4LIlN_7SHZi
+https://youtu.be/NEoQRqDCcSM?si=s7UsEJIvgcpJHBCM
 
 **Toolkit for Polylang - Translation Inspector & Duplicate Content** is a powerful WordPress plugin that helps you scan your multilingual website and find translation issues.
 
