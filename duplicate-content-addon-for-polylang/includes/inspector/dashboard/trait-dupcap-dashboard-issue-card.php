@@ -548,8 +548,10 @@ trait DUPCAP_Dashboard_Issue_Card_Trait {
 				return;
 			}
 
-			if ( 'content_identical' === $group['dedupe_key'] ) {
-				$this->render_content_identical_details( $group['details'] );
+			if ( in_array( $group['dedupe_key'], array( 'content_identical', 'content_acf', 'content_placeholder' ), true ) ) {
+				$this->render_content_identical_details(
+					'content_placeholder' === $group['dedupe_key'] ? $this->merge_placeholder_rows( $group['details'] ) : $group['details']
+				);
 				return;
 			}
 

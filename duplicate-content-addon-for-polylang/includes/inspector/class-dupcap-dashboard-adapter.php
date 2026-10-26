@@ -339,6 +339,12 @@ class DUPCAP_Dashboard_Adapter {
 		if ( 0 === strpos( $id, 'content_identical_' ) ) {
 			return 'content_identical';
 		}
+		if ( 0 === strpos( $id, 'content_acf_' ) ) {
+			return 'content_acf';
+		}
+		if ( 0 === strpos( $id, 'content_placeholder_' ) ) {
+			return 'content_placeholder';
+		}
 		if ( 0 === strpos( $id, 'content_link_' ) ) {
 			return 'content_links';
 		}
@@ -408,6 +414,12 @@ class DUPCAP_Dashboard_Adapter {
 			return array( $matches[1] );
 		}
 		if ( preg_match( '/^content_identical_(.+)$/', $id, $matches ) ) {
+			return array( $matches[1] );
+		}
+		if ( preg_match( '/^content_acf_(.+)$/', $id, $matches ) ) {
+			return array( $matches[1] );
+		}
+		if ( preg_match( '/^content_placeholder_(.+)$/', $id, $matches ) ) {
 			return array( $matches[1] );
 		}
 		if ( preg_match( '/^content_link_(.+)$/', $id, $matches ) ) {

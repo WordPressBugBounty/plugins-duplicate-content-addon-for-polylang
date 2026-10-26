@@ -152,6 +152,23 @@ trait DUPCAP_Dashboard_Content_Pending_Trait {
 												?>
 											</a>
 										<?php endif; ?>
+										<?php if ( $is_source_updated && ! empty( $post_row['missing'] ) ) : ?>
+											<?php
+											$first_target = reset( $post_row['missing'] );
+											$trans_target_id = ! empty( $first_target['translation_id'] ) ? (int) $first_target['translation_id'] : ( function_exists( 'pll_get_post' ) ? (int) pll_get_post( $post_row['post_id'], $first_target['slug'] ) : 0 );
+											?>
+											<?php if ( $trans_target_id > 0 ) : ?>
+												<button
+													type="button"
+													class="button button-small dupcap-view-diff-btn"
+													data-translation-id="<?php echo esc_attr( $trans_target_id ); ?>"
+													title="<?php esc_attr_e( 'See what changed in the source since this translation was last up to date', 'duplicate-content-addon-for-polylang' ); ?>"
+												>
+													<span class="dashicons dashicons-visibility" aria-hidden="true"></span>
+													<?php esc_html_e( 'See what changed', 'duplicate-content-addon-for-polylang' ); ?>
+												</button>
+											<?php endif; ?>
+										<?php endif; ?>
 										<?php
 											$row_post_type = isset( $post_row['post_type'] ) ? (string) $post_row['post_type'] : 'post';
 											$row_post_id   = isset( $post_row['post_id'] ) ? absint( $post_row['post_id'] ) : 0;

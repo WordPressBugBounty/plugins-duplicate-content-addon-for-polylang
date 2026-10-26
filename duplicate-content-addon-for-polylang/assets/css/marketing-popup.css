@@ -347,6 +347,10 @@ button.dupcap-modal-close .dashicons {
   height: 18px;
 }
 
+.dupcap-primary-btn .dashicons {
+  color: #ffffff !important;
+}
+
 /* Footer Note */
 .dupcap-modal-footer-note {
   background: #ffffff;

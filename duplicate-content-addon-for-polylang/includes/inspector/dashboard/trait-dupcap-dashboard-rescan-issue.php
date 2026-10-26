@@ -185,10 +185,20 @@ trait DUPCAP_Dashboard_Rescan_Issue_Trait {
 						}
 					}
 				} else {
-					$still_present = $this->content_detail_still_present( $ignore_key, $translation_id, $field );
-					if ( ! $still_present ) {
-						$this->remove_detail_by_ignore_key_from_report( $ignore_key );
+					// A merged row (one page, several languages) sends all its keys, comma separated.
+					$keys          = array_filter( explode( ',', $ignore_key ) );
+					$multi         = count( $keys ) > 1;
+					$still_present = true;
+					$any_fixed     = false;
+					foreach ( $keys as $one_key ) {
+						if ( $this->content_detail_still_present( $one_key, $multi ? 0 : $translation_id, $field ) ) {
+							continue;
+						}
+						$any_fixed = true;
+						$this->remove_detail_by_ignore_key_from_report( $one_key );
 					}
+					// Redraw as soon as one language is fixed; the row keeps the ones still broken.
+					$still_present = ! $any_fixed;
 				}
 
 				if ( $still_present ) {
@@ -490,8 +500,10 @@ trait DUPCAP_Dashboard_Rescan_Issue_Trait {
 			}
 
 			// content:identical:{post_id}:{lang}:{field}:{md5}
+			// content:acf:{post_id}:{lang}:{field}:{md5}
+			// content:placeholder:{post_id}:{lang}:placeholder:{md5}
 			// content:link:{post_id}:{lang}:{code}:{md5}
-			if ( ! preg_match( '/^content:(identical|link):(\d+):([a-z0-9_-]+):(.+)$/', $ignore_key, $matches ) ) {
+			if ( ! preg_match( '/^content:(identical|acf|placeholder|link):(\d+):([a-z0-9_-]+):(.+)$/', $ignore_key, $matches ) ) {
 				return true;
 			}
 
@@ -519,7 +531,15 @@ trait DUPCAP_Dashboard_Rescan_Issue_Trait {
 
 			$checker = new DUPCAP_Check_Content();
 
-			if ( 'identical' === $type ) {
+			if ( 'placeholder' === $type ) {
+				// Same post on both sides cannot be a real translation gap.
+				if ( $translation_id <= 0 || $translation_id === $post_id ) {
+					return false;
+				}
+				return $checker->placeholder_mismatch_still_present( $post_id, $translation_id );
+			}
+
+			if ( 'identical' === $type || 'acf' === $type ) {
 				// Same post on both sides cannot be a real translation gap.
 				if ( $translation_id <= 0 || $translation_id === $post_id ) {
 					return false;
@@ -527,8 +547,12 @@ trait DUPCAP_Dashboard_Rescan_Issue_Trait {
 
 				// The key is authoritative: it is what the reported row was built
 				// from. The UI hint is only a fallback for a key without a field.
-				$field = sanitize_key( strtok( $rest, ':' ) );
-				if ( ! in_array( $field, array( 'title', 'content' ), true ) ) {
+				$field          = sanitize_key( strtok( $rest, ':' ) );
+				$is_valid_field = in_array( $field, array( 'title', 'content' ), true )
+					|| 0 === strpos( $field, 'acf_' )
+					|| 0 === strpos( $field, 'meta_' )
+					|| 0 === strpos( $field, 'el_' );
+				if ( ! $is_valid_field ) {
 					$field = sanitize_key( (string) $field_hint );
 				}
 				return $checker->identical_field_still_present( $post_id, $translation_id, $field );

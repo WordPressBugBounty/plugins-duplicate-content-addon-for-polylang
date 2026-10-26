@@ -38,6 +38,15 @@ class DUPCAP_Elementor_Fields {
 			'animated-headline' => array( 'before_text', 'highlighted_text', 'rotating_text', 'after_text' ),
 			'loop-grid'       => array( 'pagination_prev_label', 'pagination_next_label', 'text', 'load_more_no_posts_custom_message' ),
 			'loop-carousel'   => array( 'pagination_prev_label', 'pagination_next_label', 'text', 'load_more_no_posts_custom_message' ),
+			// Elementor v4 atomic widgets. Their text is wrapped in a typed value, see get_setting_value().
+			'e-heading'       => array( 'title' ),
+			'e-paragraph'     => array( 'paragraph' ),
+			'e-button'        => array( 'text' ),
+			'e-form-submit-button' => array( 'text' ),
+			'e-form-input'    => array( 'placeholder' ),
+			'e-form-textarea' => array( 'placeholder' ),
+			'e-form-label'    => array( 'text' ),
+			'e-image'         => array( 'image.src.alt' ),
 		);
 
 		/**
@@ -162,6 +171,10 @@ class DUPCAP_Elementor_Fields {
 			'pagination_prev_label'  => __( 'Previous label', 'duplicate-content-addon-for-polylang' ),
 			'pagination_next_label'  => __( 'Next label', 'duplicate-content-addon-for-polylang' ),
 			'load_more_no_posts_custom_message' => __( 'No posts message', 'duplicate-content-addon-for-polylang' ),
+			'alt'                    => __( 'Image alt text', 'duplicate-content-addon-for-polylang' ),
+			'key'                    => __( 'Option label', 'duplicate-content-addon-for-polylang' ),
+			'paragraph'              => __( 'Paragraph', 'duplicate-content-addon-for-polylang' ),
+			'placeholder'            => __( 'Placeholder', 'duplicate-content-addon-for-polylang' ),
 		);
 
 		if ( isset( $labels[ $field ] ) ) {
@@ -355,6 +368,17 @@ class DUPCAP_Elementor_Fields {
 			}
 		}
 
+		// Atomic select: each option is a { key, value } pair and the key is the visible label.
+		if ( 'e-form-select' === $widget_type && isset( $settings['options']['value'] ) && is_array( $settings['options']['value'] ) ) {
+			foreach ( $settings['options']['value'] as $index => $option ) {
+				$pair  = ( is_array( $option ) && isset( $option['value'] ) && is_array( $option['value'] ) ) ? $option['value'] : array();
+				$label = self::get_setting_value( $pair, 'key' );
+				if ( self::is_meaningful_text( $label ) ) {
+					$values[ 'options[' . (int) $index . '].key' ] = $label;
+				}
+			}
+		}
+
 		$simple_links = self::simple_link_fields();
 		if ( isset( $simple_links[ $widget_type ] ) ) {
 			foreach ( $simple_links[ $widget_type ] as $key ) {
@@ -527,7 +551,233 @@ class DUPCAP_Elementor_Fields {
 		if ( is_array( $value ) && isset( $value['url'] ) && is_scalar( $value['url'] ) ) {
 			return trim( (string) $value['url'] );
 		}
+		// Atomic link: { "$$type": "link", "value": { "destination": { "$$type": "url", "value": "..." } } }.
+		// A dynamic destination has no fixed URL to check.
+		if ( is_array( $value ) && isset( $value['$$type'], $value['value']['destination'] ) && is_array( $value['value']['destination'] ) ) {
+			$destination = $value['value']['destination'];
+			if ( isset( $destination['$$type'], $destination['value'] ) && 'url' === $destination['$$type'] && is_string( $destination['value'] ) ) {
+				return trim( $destination['value'] );
+			}
+		}
 		return '';
+	}
+
+	/**
+	 * Whether a translated widget field still holds the original text unchanged.
+	 *
+	 * Shared by the dashboard Elementor scan and the frontend Untranslated
+	 * Inspector so both report the same fields.
+	 *
+	 * @param string $field_key        Field key.
+	 * @param mixed  $original_value   Value in the source-language document.
+	 * @param mixed  $translated_value Value in the translated document.
+	 * @return bool
+	 */
+	public static function is_untranslated_text( $field_key, $original_value, $translated_value, $target_lang = '' ) {
+		return ! self::is_loop_template_field( $field_key )
+			&& ! self::is_link_field( $field_key )
+			&& self::is_meaningful_text( $translated_value )
+			&& ! self::should_skip_same_text_warning( $field_key, $original_value )
+			&& self::is_text_substantially_untranslated( $original_value, $translated_value, $target_lang );
+	}
+
+	/**
+	 * Whether translated text is identical or substantially untranslated compared to source text.
+	 *
+	 * Checks exact equality, high similarity (>= 80% by default), and target script mismatch.
+	 *
+	 * @param mixed  $original_value   Source text.
+	 * @param mixed  $translated_value Translated text.
+	 * @param string $target_lang      Target language code.
+	 * @return bool
+	 */
+	public static function is_text_substantially_untranslated( $original_value, $translated_value, $target_lang = '' ) {
+		$orig  = self::normalize_text_for_compare( (string) $original_value );
+		$trans = self::normalize_text_for_compare( (string) $translated_value );
+
+		if ( '' === $orig || '' === $trans ) {
+			return false;
+		}
+
+		// Exact match
+		if ( $orig === $trans ) {
+			return true;
+		}
+
+		// Exact match ignoring punctuation and case
+		$orig_clean  = preg_replace( '/[^\p{L}\p{N}]+/u', '', self::lower( $orig ) );
+		$trans_clean = preg_replace( '/[^\p{L}\p{N}]+/u', '', self::lower( $trans ) );
+		if ( '' !== $orig_clean && $orig_clean === $trans_clean ) {
+			return true;
+		}
+
+		// Target Script Mismatch (e.g. Hindi target expecting Devanagari, but translated has Latin text)
+		if ( '' !== $target_lang && self::is_target_script_mismatch( $orig, $trans, $target_lang ) ) {
+			return true;
+		}
+
+		// For short strings (< 20 chars or < 3 words), require exact/cleaned match or script mismatch to avoid cognate false positives
+		$word_count = count( preg_split( '/\s+/u', $orig, -1, PREG_SPLIT_NO_EMPTY ) );
+		if ( self::length( $orig ) < 20 || $word_count < 3 ) {
+			return false;
+		}
+
+		// Similarity Threshold Check for sentences/paragraphs
+		$threshold  = (float) apply_filters( 'dupcap_untranslated_similarity_threshold', 0.80 );
+		$similarity = self::calculate_similarity( $orig, $trans );
+
+		return $similarity >= $threshold;
+	}
+
+	/**
+	 * Lowercase a string safely with or without mbstring.
+	 *
+	 * @param string $text Text to lowercase.
+	 * @return string
+	 */
+	public static function lower( $text ) {
+		return function_exists( 'mb_strtolower' ) ? mb_strtolower( (string) $text, 'UTF-8' ) : strtolower( (string) $text );
+	}
+
+	/**
+	 * String character length safely with or without mbstring.
+	 *
+	 * @param string $text Text.
+	 * @return int
+	 */
+	public static function length( $text ) {
+		return function_exists( 'mb_strlen' ) ? mb_strlen( (string) $text, 'UTF-8' ) : strlen( (string) $text );
+	}
+
+	/**
+	 * Normalize text for string comparison (strip tags, decode entities, collapse whitespace).
+	 *
+	 * @param string $text Raw text.
+	 * @return string Normalized text.
+	 */
+	public static function normalize_text_for_compare( $text ) {
+		$text = wp_strip_all_tags( (string) $text );
+		$text = html_entity_decode( $text, ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+		$text = (string) preg_replace( '/\s+/u', ' ', $text );
+		return trim( $text );
+	}
+
+	/**
+	 * Calculate string similarity as a float between 0.0 and 1.0.
+	 *
+	 * @param string $str1 First string.
+	 * @param string $str2 Second string.
+	 * @return float
+	 */
+	public static function calculate_similarity( $str1, $str2 ) {
+		$str1 = self::lower( trim( (string) $str1 ) );
+		$str2 = self::lower( trim( (string) $str2 ) );
+
+		if ( $str1 === $str2 ) {
+			return 1.0;
+		}
+
+		$len1 = self::length( $str1 );
+		$len2 = self::length( $str2 );
+
+		if ( 0 === $len1 || 0 === $len2 ) {
+			return 0.0;
+		}
+
+		// If length ratio is below 60%, similarity cannot be >= 80%.
+		$min_len = min( $len1, $len2 );
+		$max_len = max( $len1, $len2 );
+		if ( ( $min_len / $max_len ) < 0.60 ) {
+			return 0.0;
+		}
+
+		// For long texts (> 1500 chars), use fast token/word overlap to avoid O(N^3)
+		if ( $max_len > 1500 ) {
+			$words1 = preg_split( '/\s+/u', $str1, -1, PREG_SPLIT_NO_EMPTY );
+			$words2 = preg_split( '/\s+/u', $str2, -1, PREG_SPLIT_NO_EMPTY );
+			if ( empty( $words1 ) || empty( $words2 ) ) {
+				return 0.0;
+			}
+			$intersect = array_intersect( $words1, $words2 );
+			return (float) ( count( $intersect ) / max( count( $words1 ), count( $words2 ) ) );
+		}
+
+		$percent = 0.0;
+		similar_text( $str1, $str2, $percent );
+		return (float) ( $percent / 100.0 );
+	}
+
+	/**
+	 * Check if translated text is missing expected non-Latin script while source has Latin characters.
+	 *
+	 * E.g. target is Hindi ('hi') but translated text has zero Devanagari and consists of Latin letters.
+	 *
+	 * @param string $orig        Source text.
+	 * @param string $trans       Translated text.
+	 * @param string $target_lang Target language code.
+	 * @return bool
+	 */
+	public static function is_target_script_mismatch( $orig, $trans, $target_lang ) {
+		$target_lang = strtolower( trim( (string) $target_lang ) );
+		if ( '' === $target_lang ) {
+			return false;
+		}
+
+		$prefix = preg_replace( '/[-_].*$/', '', $target_lang );
+
+		$script_patterns = array(
+			'hi' => '/\p{Devanagari}/u',
+			'mr' => '/\p{Devanagari}/u',
+			'ne' => '/\p{Devanagari}/u',
+			'ar' => '/\p{Arabic}/u',
+			'ur' => '/\p{Arabic}/u',
+			'fa' => '/\p{Arabic}/u',
+			'ru' => '/\p{Cyrillic}/u',
+			'uk' => '/\p{Cyrillic}/u',
+			'bg' => '/\p{Cyrillic}/u',
+			'el' => '/\p{Greek}/u',
+			'he' => '/\p{Hebrew}/u',
+			'zh' => '/\p{Han}/u',
+			'ja' => '/[\p{Hiragana}\p{Katakana}\p{Han}]/u',
+			'ko' => '/\p{Hangul}/u',
+			'th' => '/\p{Thai}/u',
+			'bn' => '/\p{Bengali}/u',
+			'ta' => '/\p{Tamil}/u',
+			'te' => '/\p{Telugu}/u',
+			'gu' => '/\p{Gujarati}/u',
+			'pa' => '/\p{Gurmukhi}/u',
+		);
+
+		if ( ! isset( $script_patterns[ $prefix ] ) ) {
+			return false;
+		}
+
+		$pattern = $script_patterns[ $prefix ];
+
+		// If translated text already has characters of the target script, not a script mismatch.
+		if ( preg_match( $pattern, $trans ) ) {
+			return false;
+		}
+
+		// If translated text has no letters (e.g. only numbers/symbols), skip.
+		if ( ! preg_match( '/\p{L}/u', $trans ) ) {
+			return false;
+		}
+
+		// If translated text has Latin letters and source text also had Latin letters:
+		if ( preg_match( '/\p{Latin}/u', $orig ) && preg_match( '/\p{Latin}/u', $trans ) ) {
+			$orig_words  = preg_split( '/[\s\p{P}]+/u', self::lower( $orig ), -1, PREG_SPLIT_NO_EMPTY );
+			$trans_words = preg_split( '/[\s\p{P}]+/u', self::lower( $trans ), -1, PREG_SPLIT_NO_EMPTY );
+
+			if ( ! empty( $orig_words ) && ! empty( $trans_words ) ) {
+				$shared = array_intersect( $trans_words, $orig_words );
+				if ( ( count( $shared ) / max( 1, count( $orig_words ) ) ) >= 0.30 ) {
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
 	/**
@@ -557,6 +807,11 @@ class DUPCAP_Elementor_Fields {
 
 		// Numbers / currency / units only (ASCII + euro/pound/yen via unicode escapes).
 		if ( preg_match( '/^[\d\s\.\,\%\$\x{20AC}\x{00A3}\x{00A5}\/\-\+]+$/u', $value ) ) {
+			return true;
+		}
+
+		// A bare URL or email address is the same in every language.
+		if ( preg_match( '#^(?:https?:)?//\S+$#i', $value ) || preg_match( '#^www\.\S+$#i', $value ) || is_email( $value ) ) {
 			return true;
 		}
 
@@ -648,11 +903,42 @@ class DUPCAP_Elementor_Fields {
 	 * @return string
 	 */
 	public static function get_setting_value( array $settings, $key ) {
-		if ( ! isset( $settings[ $key ] ) ) {
+		if ( false !== strpos( (string) $key, '.' ) ) {
+			// A path into atomic typed values, e.g. image.src.alt.
+			$value = $settings;
+			foreach ( explode( '.', (string) $key ) as $segment ) {
+				if ( is_array( $value ) && isset( $value['$$type'], $value['value'] ) && is_array( $value['value'] ) ) {
+					$value = $value['value'];
+				}
+				if ( ! is_array( $value ) || ! isset( $value[ $segment ] ) ) {
+					return '';
+				}
+				$value = $value[ $segment ];
+			}
+		} elseif ( isset( $settings[ $key ] ) ) {
+			$value = $settings[ $key ];
+		} else {
 			return '';
 		}
 
-		$value = $settings[ $key ];
+		// Elementor v4 atomic widgets store text as { "$$type": "string|escaped-html", "value": "text" },
+		// or, in older v4 releases, as html-v3: { "value": { "content": { "value": "text" }, "children": [] } }.
+		// Dynamic tags and other typed values carry no plain text and fall through as empty.
+		if ( is_array( $value ) && isset( $value['$$type'], $value['value'] ) ) {
+			$inner = $value['value'];
+			if ( is_array( $inner ) && ( array_key_exists( 'content', $inner ) || array_key_exists( 'children', $inner ) ) ) {
+				$text = ( isset( $inner['content']['value'] ) && is_string( $inner['content']['value'] ) ) ? $inner['content']['value'] : '';
+				if ( ! empty( $inner['children'] ) && is_array( $inner['children'] ) ) {
+					$text .= ' ' . self::html_v3_children_text( $inner['children'] );
+				}
+				$inner = trim( $text );
+			}
+			if ( is_string( $inner ) ) {
+				// Line breaks become spaces so "Ski<br>Resort" does not read as "SkiResort".
+				$value = preg_replace( '#<br\s*/?>#i', ' ', $inner );
+			}
+		}
+
 		if ( is_array( $value ) ) {
 			return '';
 		}
@@ -660,6 +946,142 @@ class DUPCAP_Elementor_Fields {
 		$value = (string) $value;
 		$value = html_entity_decode( wp_strip_all_tags( $value ), ENT_QUOTES, 'UTF-8' );
 		return trim( $value );
+	}
+
+	/**
+	 * Setting names that never hold visible text, even when they look like it.
+	 *
+	 * Only used to guess at widgets that are not in the field registry.
+	 */
+	const SIGNATURE_STYLE_PATTERN = '/(typography|colou?r|size|align|margin|padding|border|shadow|css|_class|_id$|width|height|position|spacing|gap|radius|animation|font|weight|transform|hover|icon|image|background|opacity|z_index|layout|view|skin|html_tag|header_size)/i';
+
+	/**
+	 * Setting names that look like visible text.
+	 */
+	const SIGNATURE_TEXT_PATTERN = '/(^|_)(title|text|content|description|heading|label|caption|editor|placeholder|subtitle|message)(_|$)/i';
+
+	/**
+	 * What a translator would have to react to in an Elementor document: its text and its links.
+	 *
+	 * Styling (typography, colours, spacing, classes, sizes) is left out, so a design
+	 * tweak on the source does not make its translations look outdated. Widgets in the
+	 * field registry use their listed fields; a widget from another plugin falls back to
+	 * settings whose names look like text.
+	 *
+	 * @since 2.1.2
+	 *
+	 * @param array $elements Decoded `_elementor_data` element tree.
+	 * @return string One line per field, in document order.
+	 */
+	public static function content_signature( array $elements ) {
+		$lines = array();
+		self::collect_signature( $elements, $lines );
+		return implode( "\n", $lines );
+	}
+
+	/**
+	 * Walk the element tree and add one signature line per text or link field.
+	 *
+	 * @param array $elements Elements.
+	 * @param array $lines    Lines, by reference.
+	 * @return void
+	 */
+	protected static function collect_signature( array $elements, array &$lines ) {
+		$known = null;
+
+		foreach ( $elements as $element ) {
+			if ( ! is_array( $element ) ) {
+				continue;
+			}
+
+			$widget = isset( $element['widgetType'] ) ? (string) $element['widgetType'] : '';
+			if ( '' !== $widget && isset( $element['elType'] ) && 'widget' === $element['elType'] ) {
+				if ( null === $known ) {
+					$known = array_merge( array_keys( self::simple_fields() ), array_keys( self::repeater_fields() ), array_keys( self::simple_link_fields() ) );
+				}
+
+				$fields = self::extract_from_element( $element );
+				if ( ! in_array( $widget, $known, true ) ) {
+					$settings = isset( $element['settings'] ) && is_array( $element['settings'] ) ? $element['settings'] : array();
+					$fields  += self::guess_text_fields( $settings, '' );
+				}
+
+				foreach ( $fields as $key => $value ) {
+					$value = trim( (string) preg_replace( '/\s+/u', ' ', (string) $value ) );
+					if ( '' !== $value ) {
+						$lines[] = $widget . '|' . $key . '=' . $value;
+					}
+				}
+			}
+
+			if ( ! empty( $element['elements'] ) && is_array( $element['elements'] ) ) {
+				self::collect_signature( $element['elements'], $lines );
+			}
+		}
+	}
+
+	/**
+	 * Text-looking settings of a widget that is not in the field registry.
+	 *
+	 * @param array  $settings Widget settings.
+	 * @param string $prefix   Key prefix for nested repeater rows.
+	 * @return array<string, string> field_key => text.
+	 */
+	protected static function guess_text_fields( array $settings, $prefix ) {
+		$found = array();
+
+		foreach ( $settings as $name => $value ) {
+			$name = (string) $name;
+			if ( '' === $name || 0 === strpos( $name, '_' ) || preg_match( self::SIGNATURE_STYLE_PATTERN, $name ) ) {
+				continue;
+			}
+
+			// A repeater: a list of rows, each row a settings array.
+			if ( is_array( $value ) && isset( $value[0] ) && is_array( $value[0] ) && ! isset( $value['$$type'] ) ) {
+				foreach ( $value as $index => $row ) {
+					if ( is_array( $row ) ) {
+						$found += self::guess_text_fields( $row, $prefix . $name . '[' . (int) $index . '].' );
+					}
+				}
+				continue;
+			}
+
+			if ( ! preg_match( self::SIGNATURE_TEXT_PATTERN, $name ) ) {
+				continue;
+			}
+
+			$text = self::get_setting_value( array( $name => $value ), $name );
+			if ( self::is_meaningful_text( $text ) ) {
+				$found[ $prefix . $name ] = $text;
+			}
+		}
+
+		return $found;
+	}
+
+	/**
+	 * Text of the inline children of an html-v3 value (bold, italic, links...), nested to any depth.
+	 *
+	 * @param array $children Child element objects, each with a plain-string content and children.
+	 * @return string
+	 */
+	protected static function html_v3_children_text( array $children ) {
+		$parts = array();
+		foreach ( $children as $child ) {
+			if ( ! is_array( $child ) ) {
+				continue;
+			}
+			if ( isset( $child['content'] ) && is_string( $child['content'] ) && '' !== trim( $child['content'] ) ) {
+				$parts[] = trim( $child['content'] );
+			}
+			if ( ! empty( $child['children'] ) && is_array( $child['children'] ) ) {
+				$nested = self::html_v3_children_text( $child['children'] );
+				if ( '' !== $nested ) {
+					$parts[] = $nested;
+				}
+			}
+		}
+		return implode( ' ', $parts );
 	}
 
 	/**
@@ -1056,6 +1478,15 @@ class DUPCAP_Elementor_Fields {
 			'price-list'    => __( 'Price List', 'duplicate-content-addon-for-polylang' ),
 			'social-icons'  => __( 'Social Icons', 'duplicate-content-addon-for-polylang' ),
 			'star-rating'   => __( 'Star Rating', 'duplicate-content-addon-for-polylang' ),
+			'e-heading'     => __( 'Heading', 'duplicate-content-addon-for-polylang' ),
+			'e-paragraph'   => __( 'Paragraph', 'duplicate-content-addon-for-polylang' ),
+			'e-button'      => __( 'Button', 'duplicate-content-addon-for-polylang' ),
+			'e-form-submit-button' => __( 'Form Button', 'duplicate-content-addon-for-polylang' ),
+			'e-form-input'  => __( 'Form Field', 'duplicate-content-addon-for-polylang' ),
+			'e-form-textarea' => __( 'Form Field', 'duplicate-content-addon-for-polylang' ),
+			'e-form-label'  => __( 'Form Label', 'duplicate-content-addon-for-polylang' ),
+			'e-form-select' => __( 'Form Select', 'duplicate-content-addon-for-polylang' ),
+			'e-image'       => __( 'Image', 'duplicate-content-addon-for-polylang' ),
 		);
 
 		$widget_type = (string) $widget_type;

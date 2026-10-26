@@ -369,6 +369,8 @@ trait DUPCAP_Dashboard_Health_Trait {
 			$quality_keys = array(
 				'content_links',
 				'content_identical',
+				'content_acf',
+				'content_placeholder',
 				'content_source_updated',
 
 				/*

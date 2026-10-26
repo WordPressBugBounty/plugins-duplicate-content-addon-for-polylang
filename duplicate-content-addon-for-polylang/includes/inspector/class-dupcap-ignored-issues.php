@@ -63,6 +63,54 @@ class DUPCAP_Ignored_Issues {
 	}
 
 	/**
+	 * Ignore key for an ACF or custom field identical content issue.
+	 *
+	 * @param int    $post_id Source post ID.
+	 * @param string $lang    Target language slug.
+	 * @param string $field   Field key (acf_*|meta_*).
+	 * @param string $text    Original text.
+	 * @return string
+	 */
+	public static function content_acf_key( $post_id, $lang = '', $field = '', $text = '' ) {
+		$parts = array(
+			'content',
+			'acf',
+			(string) (int) $post_id,
+			(string) $lang,
+			sanitize_key( (string) $field ),
+		);
+		if ( '' !== (string) $text ) {
+			$parts[] = md5( (string) $text );
+		}
+		return self::sanitize_key( implode( ':', $parts ) );
+	}
+
+	/**
+	 * Ignore key for a shortcode / placeholder mismatch between a source and its translation.
+	 *
+	 * The key carries a hash of both token lists, so an ignored row comes back if the mismatch changes.
+	 *
+	 * @param int    $post_id   Source post ID.
+	 * @param string $lang      Target language slug.
+	 * @param string $field     Always "placeholder".
+	 * @param string $signature Serialized token lists of both posts.
+	 * @return string
+	 */
+	public static function content_placeholder_key( $post_id, $lang = '', $field = 'placeholder', $signature = '' ) {
+		$parts = array(
+			'content',
+			'placeholder',
+			(string) (int) $post_id,
+			(string) $lang,
+			sanitize_key( (string) $field ),
+		);
+		if ( '' !== (string) $signature ) {
+			$parts[] = md5( (string) $signature );
+		}
+		return self::sanitize_key( implode( ':', $parts ) );
+	}
+
+	/**
 	 * Ignore key for a Gutenberg/classic content link issue.
 	 *
 	 * @param int    $post_id Source post ID.
@@ -278,7 +326,7 @@ class DUPCAP_Ignored_Issues {
 			return '';
 		}
 
-		if ( preg_match( '/^(content_missing|content_draft|term_missing|content:identical|content:link|content:source_updated|content:off_source):/', $key ) ) {
+		if ( preg_match( '/^(content_missing|content_draft|term_missing|content:identical|content:acf|content:placeholder|content:link|content:source_updated|content:off_source):/', $key ) ) {
 			return 'content';
 		}
 

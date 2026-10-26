@@ -213,6 +213,18 @@ trait DUPCAP_Dashboard_Ignored_Trait {
 				return $parts[0] . ':' . $parts[1] . ':' . $parts[2];
 			}
 
+			if ( count( $parts ) >= 4 && 'content' === $parts[0] && 'source_updated' === $parts[1] ) {
+				return 'content:source_updated:' . $parts[2];
+			}
+
+			if ( count( $parts ) >= 4 && 'content' === $parts[0] && 'placeholder' === $parts[1] ) {
+				return 'content:placeholder:' . $parts[2];
+			}
+
+			if ( count( $parts ) >= 5 && 'content' === $parts[0] && 'acf' === $parts[1] ) {
+				return 'content:acf:' . $parts[2] . ':' . implode( ':', array_slice( $parts, 4 ) );
+			}
+
 			if ( count( $parts ) >= 5 && 'content' === $parts[0] && 'identical' === $parts[1] ) {
 				return 'content:identical:' . $parts[2] . ':' . implode( ':', array_slice( $parts, 4 ) );
 			}
@@ -491,6 +503,67 @@ trait DUPCAP_Dashboard_Ignored_Trait {
 				);
 			}
 
+			if ( count( $parts ) >= 4 && 'content' === $parts[0] && 'source_updated' === $parts[1] ) {
+				$post_id = absint( $parts[2] );
+				$lang    = sanitize_key( $parts[3] );
+				$post    = $post_id ? get_post( $post_id ) : null;
+				if ( ! $post ) {
+					return null;
+				}
+				$obj = get_post_type_object( $post->post_type );
+				return array(
+					'ignore_key'      => $key,
+					'ignored_at'      => $ignored_at,
+					'title'           => $post->post_title ? $post->post_title : __( '(no title)', 'duplicate-content-addon-for-polylang' ),
+					'kind'            => __( 'Default language updated', 'duplicate-content-addon-for-polylang' ),
+					'post_type'       => $post->post_type,
+					'post_type_label' => $obj && ! empty( $obj->labels->singular_name ) ? (string) $obj->labels->singular_name : $post->post_type,
+					'language'        => $lang,
+					'edit_url'        => get_edit_post_link( $post_id, 'raw' ),
+				);
+			}
+
+			if ( count( $parts ) >= 4 && 'content' === $parts[0] && 'placeholder' === $parts[1] ) {
+				$post_id = absint( $parts[2] );
+				$lang    = sanitize_key( $parts[3] );
+				$post    = $post_id ? get_post( $post_id ) : null;
+				if ( ! $post ) {
+					return null;
+				}
+				$obj = get_post_type_object( $post->post_type );
+				return array(
+					'ignore_key'      => $key,
+					'ignored_at'      => $ignored_at,
+					'title'           => $post->post_title ? $post->post_title : __( '(no title)', 'duplicate-content-addon-for-polylang' ),
+					'kind'            => __( 'Shortcode or placeholder mismatch', 'duplicate-content-addon-for-polylang' ),
+					'post_type'       => $post->post_type,
+					'post_type_label' => $obj && ! empty( $obj->labels->singular_name ) ? (string) $obj->labels->singular_name : $post->post_type,
+					'language'        => $lang,
+					'edit_url'        => get_edit_post_link( $post_id, 'raw' ),
+				);
+			}
+
+			if ( count( $parts ) >= 5 && 'content' === $parts[0] && 'acf' === $parts[1] ) {
+				$post_id = absint( $parts[2] );
+				$lang    = sanitize_key( $parts[3] );
+				$field   = sanitize_key( $parts[4] );
+				$post    = $post_id ? get_post( $post_id ) : null;
+				if ( ! $post ) {
+					return null;
+				}
+				$obj = get_post_type_object( $post->post_type );
+				return array(
+					'ignore_key'      => $key,
+					'ignored_at'      => $ignored_at,
+					'title'           => $post->post_title ? $post->post_title : __( '(no title)', 'duplicate-content-addon-for-polylang' ),
+					'kind'            => __( 'ACF or custom field mismatch', 'duplicate-content-addon-for-polylang' ),
+					'post_type'       => $post->post_type,
+					'post_type_label' => $obj && ! empty( $obj->labels->singular_name ) ? (string) $obj->labels->singular_name : $post->post_type,
+					'language'        => $lang,
+					'edit_url'        => get_edit_post_link( $post_id, 'raw' ),
+				);
+			}
+
 			return null;
 		}
 
@@ -560,7 +633,9 @@ trait DUPCAP_Dashboard_Ignored_Trait {
 									$languages  = ! empty( $row['languages'] ) && is_array( $row['languages'] )
 										? $row['languages']
 										: ( ! empty( $row['language'] ) ? array_filter( explode( ',', (string) $row['language'] ) ) : array() );
-									$ignore_key = isset( $row['ignore_key'] ) ? (string) $row['ignore_key'] : '';
+									$ignore_key = ! empty( $row['ignore_keys'] ) && is_array( $row['ignore_keys'] )
+										? implode( ',', array_unique( array_filter( $row['ignore_keys'] ) ) )
+										: ( isset( $row['ignore_key'] ) ? (string) $row['ignore_key'] : '' );
 									$edit_url   = ! empty( $row['edit_url'] ) ? (string) $row['edit_url'] : '';
 									$post_type  = isset( $row['post_type'] ) ? (string) $row['post_type'] : '';
 									?>

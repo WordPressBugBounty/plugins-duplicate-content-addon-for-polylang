@@ -261,6 +261,8 @@ trait DUPCAP_Dashboard_Copy_Trait {
 				'content_nolang'         => __( 'Content without a language', 'duplicate-content-addon-for-polylang' ),
 				'content_missing'        => __( 'Missing Translations', 'duplicate-content-addon-for-polylang' ),
 				'content_identical'      => __( 'Identical Content', 'duplicate-content-addon-for-polylang' ),
+				'content_acf'            => __( 'ACF & Custom Fields', 'duplicate-content-addon-for-polylang' ),
+				'content_placeholder'    => __( 'Shortcode & Placeholder Mismatch', 'duplicate-content-addon-for-polylang' ),
 				'content_source_updated' => __( 'Default Language Updated', 'duplicate-content-addon-for-polylang' ),
 				'content_links'          => __( 'Content Links', 'duplicate-content-addon-for-polylang' ),
 				'content_draft'          => __( 'Unpublished Page/Post', 'duplicate-content-addon-for-polylang' ),

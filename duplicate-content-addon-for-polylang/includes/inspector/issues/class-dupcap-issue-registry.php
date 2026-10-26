@@ -360,6 +360,32 @@ final class DUPCAP_Issue_Registry {
 			'howto'         => __( 'Open the translated page in WordPress and replace the copied original text with your translated copy.', 'duplicate-content-addon-for-polylang' ),
 		);
 
+		$definitions[ DUPCAP_Issue_Types::CONTENT_ACF ] = array(
+			'section'       => DUPCAP_Issue_Types::SECTION_CONTENT,
+			'severity'      => DUPCAP_Issue_Types::SEVERITY_WARNING,
+			'severity_from' => DUPCAP_Issue_Types::SEVERITY_DECLARED,
+			'effort'        => DUPCAP_Issue_Types::EFFORT_MANUAL,
+			'owner'         => DUPCAP_Issue_Types::OWNER_TRANSLATOR,
+			'count_by'      => DUPCAP_Issue_Types::COUNT_ROW,
+			'legacy_keys'   => array( 'content_acf_' ),
+			'message'       => __( 'Some translated pages contain ACF or custom fields that still match the original language.', 'duplicate-content-addon-for-polylang' ),
+			'why'           => __( 'Visitors on your translated pages will see untranslated text in ACF and custom fields from the original language.', 'duplicate-content-addon-for-polylang' ),
+			'howto'         => __( 'Open the translated page in WordPress and translate the custom fields into that language.', 'duplicate-content-addon-for-polylang' ),
+		);
+
+		$definitions[ DUPCAP_Issue_Types::CONTENT_PLACEHOLDER ] = array(
+			'section'       => DUPCAP_Issue_Types::SECTION_CONTENT,
+			'severity'      => DUPCAP_Issue_Types::SEVERITY_WARNING,
+			'severity_from' => DUPCAP_Issue_Types::SEVERITY_DECLARED,
+			'effort'        => DUPCAP_Issue_Types::EFFORT_MANUAL,
+			'owner'         => DUPCAP_Issue_Types::OWNER_TRANSLATOR,
+			'count_by'      => DUPCAP_Issue_Types::COUNT_ROW,
+			'legacy_keys'   => array( 'content_placeholder_' ),
+			'message'       => __( 'Some translated pages or posts have shortcodes or placeholders that do not match the original: one is missing, extra, or used a different number of times.', 'duplicate-content-addon-for-polylang' ),
+			'why'           => __( 'A missing shortcode usually means a form, button or widget disappeared from the translated page. A changed placeholder, such as a merge tag or a number code, can show raw codes to visitors.', 'duplicate-content-addon-for-polylang' ),
+			'howto'         => __( 'Open the translated page, compare it with the original, and restore the shortcode or placeholder. If the difference is intended, use Ignore.', 'duplicate-content-addon-for-polylang' ),
+		);
+
 		$definitions[ DUPCAP_Issue_Types::CONTENT_LINKS ] = array(
 			'section'       => DUPCAP_Issue_Types::SECTION_CONTENT,
 			'severity'      => DUPCAP_Issue_Types::SEVERITY_WARNING,

@@ -536,6 +536,7 @@ body.dupcap-onboarding-screen #wpbody-content > .update-nag {
 	font-size: 18px;
 	width: 18px;
 	height: 18px;
+	color: inherit;
 }
 
 .dupcap-onboarding__link-wrap {
@@ -805,6 +806,7 @@ body.dupcap-onboarding-screen #wpbody-content > .update-nag {
 	width: 18px;
 	height: 18px;
 	line-height: 1;
+	color: inherit;
 }
 
 .dupcap-onboarding .dupcap-onboarding__prev[hidden],

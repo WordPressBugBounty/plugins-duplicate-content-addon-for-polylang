@@ -700,6 +700,26 @@ class DUPCAP_Elementor_Scanner {
 	}
 
 	/**
+	 * When a document last changed in a way a translator has to react to.
+	 *
+	 * Pages, posts and CPTs use the content-change marker, which ignores re-saves and
+	 * style-only edits. Library templates have no marker and keep the save time.
+	 *
+	 * @param DUPCAP_Elementor_Document $doc Document.
+	 * @return int Unix GMT.
+	 */
+	protected function last_content_change( DUPCAP_Elementor_Document $doc ) {
+		if ( 'elementor_library' !== get_post_type( $doc->id ) && class_exists( 'DUPCAP_Check_Content' ) ) {
+			$changed = DUPCAP_Check_Content::content_changed_at( $doc->id );
+			if ( $changed > 0 ) {
+				return $changed;
+			}
+		}
+
+		return $doc->modified_time();
+	}
+
+	/**
 	 * Whether Connect Polylang for Elementor is managing Theme Builder conditions.
 	 *
 	 * When active, empty conditions on translations are intentional.
@@ -1265,8 +1285,8 @@ class DUPCAP_Elementor_Scanner {
 				->with_fix_link( $translation->edit_url(), __( 'Edit translation', 'duplicate-content-addon-for-polylang' ) );
 		}
 
-		$source_modified = $source->modified_time();
-		$trans_modified  = $translation->modified_time();
+		$source_modified = $this->last_content_change( $source );
+		$trans_modified  = $this->last_content_change( $translation );
 		if ( $source_modified > $trans_modified ) {
 			$days = (int) floor( ( time() - $trans_modified ) / DAY_IN_SECONDS );
 			$this->stats['outdated_templates']++;
@@ -1438,8 +1458,8 @@ class DUPCAP_Elementor_Scanner {
 						)
 						->with_fix_link( $translation->edit_url(), __( 'Edit translation', 'duplicate-content-addon-for-polylang' ) );
 				} elseif (
-					$translated_value === $original_value
-					&& ! DUPCAP_Elementor_Fields::should_skip_same_text_warning( $field_key, $original_value )
+					'elementor_library' === get_post_type( $source->id ) // Pages, posts and CPTs: DUPCAP_Check_Content reports these in the Content tab.
+					&& DUPCAP_Elementor_Fields::is_untranslated_text( $field_key, $original_value, $translated_value, $lang )
 				) {
 					$context = DUPCAP_Elementor_Fields::context_label_from_fields( $trans_element['fields'], $field_key );
 					$finding = ( new DUPCAP_Elementor_Finding(

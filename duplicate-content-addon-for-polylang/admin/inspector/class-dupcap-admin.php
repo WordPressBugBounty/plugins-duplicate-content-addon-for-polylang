@@ -347,6 +347,14 @@ class DUPCAP_Admin {
 			$css_ver
 		);
 
+		wp_enqueue_style( 'revisions' );
+		wp_enqueue_style(
+			'dupcap-editor-panel',
+			DUPCAP_INSPECTOR_URL . 'css/editor-panel.css',
+			array( 'revisions', 'dupcap-admin' ),
+			defined( 'DUPCAP_VERSION' ) ? DUPCAP_VERSION : '2.1.2'
+		);
+
 		$marketing_css = defined( 'DUPCAP_URL' ) ? DUPCAP_URL . 'assets/css/marketing-popup.css' : '';
 		if ( $marketing_css ) {
 			wp_enqueue_style(
@@ -364,6 +372,18 @@ class DUPCAP_Admin {
 			$js_ver,
 			true
 		);
+
+		if ( class_exists( 'DUPCAP_Editor_Panel' ) ) {
+			wp_enqueue_script(
+				'dupcap-classic-editor',
+				DUPCAP_INSPECTOR_URL . 'js/classic-editor.js',
+				array( 'jquery', 'wp-a11y' ),
+				defined( 'DUPCAP_VERSION' ) ? DUPCAP_VERSION : '2.1.2',
+				true
+			);
+
+			wp_localize_script( 'dupcap-classic-editor', 'dupcapClassicData', DUPCAP_Editor_Panel::get_classic_script_data() );
+		}
 
 		wp_localize_script(
 			'dupcap-admin',

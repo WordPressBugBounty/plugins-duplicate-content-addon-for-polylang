@@ -476,6 +476,88 @@ trait DUPCAP_Dashboard_Detail_Tables_Trait {
 		}
 
 		/**
+		 * Join shortcode / placeholder rows of one source page into a single row.
+		 *
+		 * The check reports one row per translation. A page translated into three
+		 * languages would show three near-identical rows, so the card shows one row
+		 * per source page with a link chip for each language. Ignore and Rescan
+		 * take the keys of all its languages at once.
+		 *
+		 * @param array<int, array<string, mixed>> $details Per-translation rows.
+		 * @return array<int, array<string, mixed>>
+		 */
+		private function merge_placeholder_rows( array $details ) {
+			$names = array();
+			if ( function_exists( 'pll_languages_list' ) ) {
+				$slugs = (array) pll_languages_list( array( 'fields' => 'slug' ) );
+				$list  = (array) pll_languages_list( array( 'fields' => 'name' ) );
+				foreach ( $slugs as $i => $slug ) {
+					$names[ (string) $slug ] = isset( $list[ $i ] ) ? (string) $list[ $i ] : (string) $slug;
+				}
+			}
+
+			$rows = array();
+			foreach ( $details as $detail ) {
+				if ( ! is_array( $detail ) ) {
+					continue;
+				}
+				$post_id = isset( $detail['post_id'] ) ? (int) $detail['post_id'] : 0;
+				$slug    = isset( $detail['language'] ) ? (string) $detail['language'] : '';
+				if ( $post_id <= 0 || '' === $slug ) {
+					$rows[] = $detail;
+					continue;
+				}
+
+				if ( ! isset( $rows[ 'p' . $post_id ] ) ) {
+					$type_obj   = get_post_type_object( (string) get_post_type( $post_id ) );
+					$type_label = ( $type_obj && ! empty( $type_obj->labels->singular_name ) ) ? (string) $type_obj->labels->singular_name : __( 'Item', 'duplicate-content-addon-for-polylang' );
+					$title      = (string) get_the_title( $post_id );
+					$detail['label'] = '' !== $title
+						? sprintf(
+							/* translators: 1: content type, e.g. Page 2: its title */
+							__( '%1$s "%2$s"', 'duplicate-content-addon-for-polylang' ),
+							$type_label,
+							$title
+						)
+						: sprintf(
+							/* translators: 1: content type, e.g. Page 2: its ID number */
+							__( '%1$s #%2$d', 'duplicate-content-addon-for-polylang' ),
+							$type_label,
+							$post_id
+						);
+					$detail['parts']       = array();
+					$detail['ignore_keys'] = array();
+					$detail['languages']   = array();
+					$rows[ 'p' . $post_id ] = $detail;
+				}
+
+				$message = isset( $detail['message'] ) ? (string) $detail['message'] : '';
+				$rows[ 'p' . $post_id ]['parts'][ $message ][] = array(
+					'slug' => $slug,
+					'name' => isset( $names[ $slug ] ) ? $names[ $slug ] : strtoupper( $slug ),
+					'url'  => isset( $detail['action_url'] ) ? (string) $detail['action_url'] : '',
+				);
+				if ( ! empty( $detail['ignore_key'] ) ) {
+					$rows[ 'p' . $post_id ]['ignore_keys'][] = (string) $detail['ignore_key'];
+				}
+				$rows[ 'p' . $post_id ]['languages'][] = $slug;
+			}
+
+			foreach ( $rows as $key => $row ) {
+				if ( empty( $row['parts'] ) ) {
+					continue;
+				}
+				$rows[ $key ]['ignore_key']     = implode( ',', $row['ignore_keys'] );
+				$rows[ $key ]['language']       = implode( ',', $row['languages'] );
+				$rows[ $key ]['translation_id'] = 0;
+				$rows[ $key ]['action_url']     = '';
+				$rows[ $key ]['message']        = implode( ' ', array_keys( $row['parts'] ) );
+			}
+
+			return array_values( $rows );
+		}
+
+		/**
 		 * Render identical-content detail rows with fix / rescan / ignore.
 		 *
 		 * @param array<int, array<string, mixed>> $details Detail rows.
@@ -503,12 +585,12 @@ trait DUPCAP_Dashboard_Detail_Tables_Trait {
 					}
 					// Older saved reports may lack IDs; recover them from the ignore key.
 					if ( ( $post_id <= 0 || '' === $language ) && '' !== $ignore_key
-						&& preg_match( '/^content:identical:(\d+):([^:]+):/', $ignore_key, $id_m ) ) {
+						&& preg_match( '/^content:(identical|acf|placeholder):(\d+):([^:]+):/', $ignore_key, $id_m ) ) {
 						if ( $post_id <= 0 ) {
-							$post_id = (int) $id_m[1];
+							$post_id = (int) $id_m[2];
 						}
 						if ( '' === $language ) {
-							$language = sanitize_key( $id_m[2] );
+							$language = sanitize_key( $id_m[3] );
 						}
 					}
 					if ( '' === $post_type && $post_id > 0 ) {
@@ -520,7 +602,32 @@ trait DUPCAP_Dashboard_Detail_Tables_Trait {
 					?>
 					<div class="dupcap-detail-row"<?php echo ! empty( $detail['post_type'] ) ? ' data-dupcap-content-type="' . esc_attr( $detail['post_type'] ) . '"' : ''; ?> data-dupcap-title="<?php echo esc_attr( isset( $detail['label'] ) ? (string) $detail['label'] : '' ); ?>">
 						<strong><?php echo esc_html( isset( $detail['label'] ) ? $detail['label'] : '' ); ?></strong>
-						<span><?php echo esc_html( isset( $detail['message'] ) ? $detail['message'] : '' ); ?></span>
+						<?php if ( ! empty( $detail['parts'] ) ) : ?>
+							<div>
+								<?php foreach ( $detail['parts'] as $part_message => $part_langs ) : ?>
+									<span><?php echo esc_html( (string) $part_message ); ?></span>
+									<div class="dupcap-content-lang-chips" style="margin-top: 6px;">
+										<?php foreach ( $part_langs as $chip ) : ?>
+											<?php $flag_html = $this->get_language_flag_html( $chip['slug'] ); ?>
+											<a
+												class="dupcap-content-lang-chip dupcap-content-lang-chip-link"
+												href="<?php echo esc_url( $chip['url'] ); ?>"
+												target="_blank"
+												rel="noopener noreferrer"
+												title="<?php echo esc_attr( sprintf( /* translators: %s: language name */ __( 'Edit translation (%s)', 'duplicate-content-addon-for-polylang' ), $chip['name'] ) ); ?>"
+											>
+												<?php if ( '' !== $flag_html ) : ?>
+													<span class="dupcap-lang-flag-wrap" aria-hidden="true"><?php echo $flag_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
+												<?php endif; ?>
+												<span class="dupcap-content-lang-chip-code"><?php echo esc_html( strtoupper( $chip['slug'] ) ); ?></span>
+											</a>
+										<?php endforeach; ?>
+									</div>
+								<?php endforeach; ?>
+							</div>
+						<?php else : ?>
+							<span><?php echo esc_html( isset( $detail['message'] ) ? $detail['message'] : '' ); ?></span>
+						<?php endif; ?>
 						<div class="dupcap-detail-row-actions">
 							<?php if ( ! empty( $detail['action_url'] ) ) : ?>
 								<a

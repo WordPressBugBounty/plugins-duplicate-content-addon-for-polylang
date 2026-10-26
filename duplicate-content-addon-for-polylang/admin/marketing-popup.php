@@ -219,6 +219,7 @@ class Dupcap_Marketing_Popup {
         }
 
         remove_filter( 'wp_redirect', $block_redirect, 1 );
+        delete_option( 'lsdp_plugin_activation_redirect' );
 
         return $result;
     }

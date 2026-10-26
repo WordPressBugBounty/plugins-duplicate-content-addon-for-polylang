@@ -4,7 +4,7 @@ Tags: Polylang, multilingual, translation, translation issues, Elementor
 Requires at least: 5.0
 Tested up to: 7.1
 Requires PHP: 7.2
-Stable tag: 2.1.1
+Stable tag: 2.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -148,6 +148,13 @@ No. Toolkit for Polylang for Polylang is a third-party addon and is not develope
 You can report security bugs through the Patchstack Vulnerability Disclosure Program. The Patchstack team help validate, triage and handle any security vulnerabilities. [Report a security vulnerability.]( https://patchstack.com/database/vdp/192d452d-4702-4ef9-a7b1-693738911de8 ).
 
 == Changelog ==
+
+= Version 2.2.0 | 26 Oct 2026 =
+- **Added:** Detection of ACF and custom-field text that remains identical to the original language on translated pages.
+- **Added:** Frontend Untranslated Inspector to identify untranslated content on the live page.
+- **Added:** Translation status into the editor sidebar panel.
+- **Improved:** Elementor scanning to detect untranslated text in v4 atomic widgets.
+- **Fixed:** Minor issues and improvements.
 
 = Version 2.1.1 | 07 Oct 2026 =
 - **Fixed:** Minor issues and improvements.

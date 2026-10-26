@@ -16,6 +16,13 @@ class DUPCAP_Check_Content extends DUPCAP_Check {
 	const BATCH_SIZE = 200;
 
 	/**
+	 * Mismatching pairs listed per language by the placeholder check before the list is cut short.
+	 *
+	 * @var int
+	 */
+	const PLACEHOLDER_ROW_CAP = 50;
+
+	/**
 	 * MD5 fingerprint of title + body (Gutenberg / classic only).
 	 *
 	 * @var string
@@ -162,11 +169,17 @@ class DUPCAP_Check_Content extends DUPCAP_Check {
 			// Gutenberg / classic: translation exists but title or body still matches the original.
 			$this->add_identical_content_counts( $results, $post_types, $languages, $default );
 
+			// ACF & custom fields: translation exists but custom fields still match original if not synced.
+			$this->add_acf_content_counts( $results, $post_types, $languages, $default );
+
 			// Default language updated → translations lag; or secondary edited off-source.
 			$this->add_content_freshness_counts( $results, $post_types, $languages, $default );
 
 			// Gutenberg / classic: links still pointing at the default / wrong language.
 			$this->add_content_link_counts( $results, $post_types, $languages, $default );
+
+			// Gutenberg / classic: shortcodes, printf specifiers or merge tags differ from the source.
+			$this->add_placeholder_mismatch_counts( $results, $post_types, $languages, $default );
 		}
 
 		// Terms: categories & tags with no language.
@@ -344,7 +357,11 @@ class DUPCAP_Check_Content extends DUPCAP_Check {
 		if ( 'elementor_library' === get_post_type( $post_id ) ) {
 			return true;
 		}
-		return 'builder' === get_post_meta( (int) $post_id, DUPCAP_Elementor_Document::META_EDIT_MODE, true );
+		if ( 'builder' === get_post_meta( (int) $post_id, DUPCAP_Elementor_Document::META_EDIT_MODE, true ) ) {
+			return true;
+		}
+		$data = get_post_meta( (int) $post_id, DUPCAP_Elementor_Document::META_DATA, true );
+		return is_string( $data ) && '' !== $data && '[]' !== $data;
 	}
 
 	/**
@@ -378,7 +395,10 @@ class DUPCAP_Check_Content extends DUPCAP_Check {
 		// changes does not look like an edit; real copy changes still hash differently.
 		$title   = $this->normalize_comparable_text( (string) $title );
 		$content = $this->normalize_comparable_text( (string) $content );
-		return 'v3:' . md5( $title . "\0" . $content . "\0" . (string) $elementor_data );
+		// v4 covers Elementor text and links only (v3 hashed the whole JSON, styles included).
+		// Posts without Elementor data keep the unchanged v3 form, so their stored hashes stay valid.
+		$version = '' === (string) $elementor_data ? 'v3:' : 'v4:';
+		return $version . md5( $title . "\0" . $content . "\0" . (string) $elementor_data );
 	}
 
 	/**
@@ -402,17 +422,21 @@ class DUPCAP_Check_Content extends DUPCAP_Check {
 		if ( ! is_array( $raw ) ) {
 			return '';
 		}
-		$json = wp_json_encode( $raw );
-		return is_string( $json ) ? $json : '';
+		// Text and links only: a style-only edit must not look like a content change.
+		// The prefix keeps the value non-empty for a page that has no text widgets yet.
+		return 'el:' . DUPCAP_Elementor_Fields::content_signature( $raw );
 	}
 
 	/**
-	 * Seconds a language must lag before it counts as outdated.
+	 * Unix GMT time of the post's last real content change, read without writing anything.
 	 *
-	 * @return int
+	 * @since 2.1.2
+	 *
+	 * @param int $post_id Post ID.
+	 * @return int Unix GMT, or 0 when no marker is stored yet.
 	 */
-	protected function content_freshness_threshold_seconds() {
-		return max( 0, (int) apply_filters( 'dupcap_content_freshness_threshold_seconds', 60 ) );
+	public static function content_changed_at( $post_id ) {
+		return max( 0, (int) get_post_meta( (int) $post_id, self::META_CONTENT_CHANGED_AT, true ) );
 	}
 
 	/**
@@ -482,20 +506,19 @@ class DUPCAP_Check_Content extends DUPCAP_Check {
 		$language     = sanitize_key( (string) $language );
 		$default_ts   = (int) $default_ts;
 		$secondary_ts = (int) $secondary_ts;
-		$threshold    = $this->content_freshness_threshold_seconds();
 
 		if ( $root_id <= 0 || '' === $language || $default_ts <= 0 || $secondary_ts <= 0 ) {
 			return 'ok';
 		}
 
-		// Within threshold → treat as synced.
-		if ( abs( $default_ts - $secondary_ts ) <= $threshold ) {
+		// Same timestamp → treat as synced.
+		if ( $default_ts === $secondary_ts ) {
 			$this->set_pair_sync_at( $root_id, $language, max( $default_ts, $secondary_ts ) );
 			return 'ok';
 		}
 
 		// Case B: default/source is newer → translation needs review.
-		if ( ( $secondary_ts + $threshold ) < $default_ts ) {
+		if ( $secondary_ts < $default_ts ) {
 			// No sync baseline yet: anchor it at the lagging secondary stamp so
 			// a later re-translate (secondary catching up past default) is not
 			// mistaken for Case A.
@@ -507,7 +530,7 @@ class DUPCAP_Check_Content extends DUPCAP_Check {
 
 		// Secondary is ahead of default — normal for AutoPoly / manual translate.
 		// Treat as synced so this does not surface as a warning.
-		if ( ( $default_ts + $threshold ) < $secondary_ts ) {
+		if ( $default_ts < $secondary_ts ) {
 			$this->set_pair_sync_at( $root_id, $language, max( $default_ts, $secondary_ts ) );
 			return 'ok';
 		}
@@ -570,6 +593,14 @@ class DUPCAP_Check_Content extends DUPCAP_Check {
 
 		if ( hash_equals( $stored_fp, $fingerprint ) ) {
 			return $stored_at > 0 ? $stored_at : 0;
+		}
+
+		// A v3 hash covered the whole Elementor JSON and a v4 hash only its text and links, so the two
+		// cannot be compared. Re-seed the hash and keep the change time, or every Elementor page would
+		// look freshly edited the first time it is seen after an update.
+		if ( 0 === strpos( $stored_fp, 'v3:' ) && 0 === strpos( $fingerprint, 'v4:' ) && $stored_at > 0 ) {
+			update_post_meta( $post_id, self::META_CONTENT_FP, $fingerprint );
+			return $stored_at;
 		}
 
 		// Content differs from the stored fingerprint. Stamp the change with the
@@ -903,18 +934,32 @@ class DUPCAP_Check_Content extends DUPCAP_Check {
 			$posts = $this->each_default_language_post( $type, $default );
 
 			foreach ( $posts as $post ) {
-				if ( DUPCAP_Elementor_Document::is_excluded_library_document( $post->ID ) || $this->is_elementor_built( $post->ID ) ) {
+				if ( DUPCAP_Elementor_Document::is_excluded_library_document( $post->ID ) ) {
+					continue;
+				}
+
+				// Library templates stay with the Elementor scanner. Elementor-built
+				// pages, posts and CPTs are compared widget by widget further down.
+				$source_is_builder = $this->is_elementor_built( $post->ID );
+				if ( $source_is_builder && 'elementor_library' === $post->post_type ) {
 					continue;
 				}
 
 				$translations = pll_get_post_translations( $post->ID );
 				$source_title = $this->normalize_comparable_text( $post->post_title );
 				$source_body  = $this->normalize_comparable_text( $post->post_content );
-				$display_title = $post->post_title ? $post->post_title : __( '(no title)', 'duplicate-content-addon-for-polylang' );
 
 				foreach ( array_keys( $by_language ) as $target_slug ) {
 					$translation_id = ! empty( $translations[ $target_slug ] ) ? (int) $translations[ $target_slug ] : 0;
 					if ( ! $translation_id || 'publish' !== get_post_status( $translation_id ) ) {
+						continue;
+					}
+
+					if ( $source_is_builder ) {
+						$builder_rows = $this->elementor_same_text_rows( $post, $translation_id, $target_slug, $language_names );
+						foreach ( $builder_rows as $builder_row ) {
+							$by_language[ $target_slug ][] = $builder_row;
+						}
 						continue;
 					}
 
@@ -926,6 +971,8 @@ class DUPCAP_Check_Content extends DUPCAP_Check {
 					if ( ! $translation ) {
 						continue;
 					}
+
+					$translated_title = $translation->post_title ? $translation->post_title : __( '(no title)', 'duplicate-content-addon-for-polylang' );
 
 					$candidates = array(
 						'title'   => array( $source_title, $this->normalize_comparable_text( $translation->post_title ) ),
@@ -958,7 +1005,7 @@ class DUPCAP_Check_Content extends DUPCAP_Check {
 								/* translators: 1: field name, e.g. Title 2: post title 3: language name */
 								__( '%1$s of "%2$s" (%3$s)', 'duplicate-content-addon-for-polylang' ),
 								$field_label,
-								$display_title,
+								$translated_title,
 								$lang_name ? $lang_name : $target_slug
 							),
 							'message'        => sprintf(
@@ -1021,6 +1068,705 @@ class DUPCAP_Check_Content extends DUPCAP_Check {
 				);
 			}
 		}
+	}
+
+	/**
+	 * Widget texts that an Elementor-built translation still shares with its source.
+	 *
+	 * Same rules as the Elementor scanner uses for library templates: widgets are
+	 * matched by element ID, link and loop fields are skipped, and brand-like
+	 * values (shortcodes, numbers) are not reported. An empty translated field is
+	 * a different problem and stays with the Elementor scanner.
+	 *
+	 * @since 2.1.2
+	 *
+	 * @param DUPCAP_Elementor_Document $source      Source document.
+	 * @param DUPCAP_Elementor_Document $translation Translation document.
+	 * @return array<int, array<string, string>> Rows of field (el_{element}_{key}), widget_type, original.
+	 */
+	protected function elementor_same_text_fields( DUPCAP_Elementor_Document $source, DUPCAP_Elementor_Document $translation ) {
+		$items           = array();
+		$translation_map = $translation->get_element_map();
+
+		foreach ( $source->get_element_map() as $element_id => $source_element ) {
+			if ( empty( $source_element['widget_type'] ) || ! isset( $translation_map[ $element_id ] ) ) {
+				continue;
+			}
+
+			foreach ( $source_element['fields'] as $field_key => $original ) {
+				if ( DUPCAP_Elementor_Fields::is_loop_template_field( $field_key ) || DUPCAP_Elementor_Fields::is_link_field( $field_key ) ) {
+					continue;
+				}
+
+				$translated = isset( $translation_map[ $element_id ]['fields'][ $field_key ] )
+					? $translation_map[ $element_id ]['fields'][ $field_key ]
+					: '';
+
+				if ( ! DUPCAP_Elementor_Fields::is_meaningful_text( $translated )
+					|| $translated !== $original
+					|| DUPCAP_Elementor_Fields::should_skip_same_text_warning( $field_key, $original ) ) {
+					continue;
+				}
+
+				$items[] = array(
+					'field'       => 'el_' . sanitize_key( (string) $element_id ) . '_' . sanitize_key( (string) $field_key ),
+					'widget_type' => (string) $source_element['widget_type'],
+					'original'    => (string) $original,
+				);
+			}
+		}
+
+		return $items;
+	}
+
+	/**
+	 * Identical-content rows for the widgets of one Elementor-built translation.
+	 *
+	 * @since 2.1.2
+	 *
+	 * @param WP_Post               $post           Source post.
+	 * @param int                   $translation_id Translation post ID.
+	 * @param string                $target_slug    Target language slug.
+	 * @param array<string, string> $language_names Language slug => name.
+	 * @return array<int, array<string, mixed>>
+	 */
+	protected function elementor_same_text_rows( $post, $translation_id, $target_slug, array $language_names ) {
+		$source      = new DUPCAP_Elementor_Document( (int) $post->ID );
+		$translation = new DUPCAP_Elementor_Document( (int) $translation_id );
+		$lang_name   = isset( $language_names[ $target_slug ] )
+			? $language_names[ $target_slug ]
+			: DUPCAP_Elementor_Fields::language_label( $target_slug );
+		$rows        = array();
+		// The label names the target language, so it names the translated page too.
+		$title       = (string) get_post_field( 'post_title', (int) $translation_id, 'raw' );
+		$title       = '' !== $title ? $title : __( '(no title)', 'duplicate-content-addon-for-polylang' );
+
+		foreach ( $this->elementor_same_text_fields( $source, $translation ) as $item ) {
+			$ignore_key = DUPCAP_Ignored_Issues::content_identical_key( $post->ID, $target_slug, $item['field'], $item['original'] );
+			if ( DUPCAP_Ignored_Issues::is_ignored( $ignore_key ) ) {
+				continue;
+			}
+
+			$snippet = function_exists( 'mb_substr' ) ? mb_substr( $item['original'], 0, 80 ) : substr( $item['original'], 0, 80 );
+
+			$rows[] = array(
+				'label'          => sprintf(
+					/* translators: 1: widget name, e.g. Heading 2: post title 3: language name */
+					__( '%1$s of "%2$s" (%3$s)', 'duplicate-content-addon-for-polylang' ),
+					DUPCAP_Elementor_Fields::widget_label( $item['widget_type'] ),
+					$title,
+					$lang_name ? $lang_name : $target_slug
+				),
+				'message'        => sprintf(
+					/* translators: %s: text that still matches the original language */
+					__( 'Not translated yet — still shows: "%s"', 'duplicate-content-addon-for-polylang' ),
+					$snippet
+				),
+				'action_url'     => $translation->edit_url(),
+				'action_label'   => __( 'Translate in Elementor', 'duplicate-content-addon-for-polylang' ),
+				'ignore_key'     => $ignore_key,
+				'post_id'        => (int) $post->ID,
+				'translation_id' => (int) $translation_id,
+				'language'       => $target_slug,
+				'field'          => $item['field'],
+				'post_type'      => $post->post_type,
+			);
+		}
+
+		return $rows;
+	}
+
+	/**
+	 * Flag linked translations whose ACF or custom fields still match the default language
+	 * when not configured to synchronize in Polylang.
+	 *
+	 * @param array  $results    Results array (by reference).
+	 * @param array  $post_types Post types.
+	 * @param array  $languages  Languages.
+	 * @param string $default    Default language slug.
+	 * @return void
+	 */
+	protected function add_acf_content_counts( &$results, $post_types, $languages, $default ) {
+		if ( ! function_exists( 'pll_get_post_translations' ) ) {
+			return;
+		}
+
+		$by_language    = array();
+		$language_names = array();
+		foreach ( $languages as $lang ) {
+			$slug = is_object( $lang ) ? $lang->slug : $lang;
+			if ( $slug !== $default ) {
+				$by_language[ $slug ] = array();
+			}
+			$language_names[ $slug ] = is_object( $lang ) && ! empty( $lang->name )
+				? (string) $lang->name
+				: DUPCAP_Elementor_Fields::language_label( $slug );
+		}
+
+		if ( empty( $by_language ) ) {
+			return;
+		}
+
+		foreach ( $post_types as $type ) {
+			$posts = $this->each_default_language_post( $type, $default );
+
+			foreach ( $posts as $post ) {
+				if ( DUPCAP_Elementor_Document::is_excluded_library_document( $post->ID ) ) {
+					continue;
+				}
+
+				$source_custom_fields = $this->get_translatable_custom_fields( $post->ID );
+				if ( empty( $source_custom_fields ) ) {
+					continue;
+				}
+
+				$translations = pll_get_post_translations( $post->ID );
+
+				foreach ( array_keys( $by_language ) as $target_slug ) {
+					$translation_id = ! empty( $translations[ $target_slug ] ) ? (int) $translations[ $target_slug ] : 0;
+					if ( ! $translation_id || 'publish' !== get_post_status( $translation_id ) ) {
+						continue;
+					}
+
+					$translation = get_post( $translation_id );
+					if ( ! $translation ) {
+						continue;
+					}
+
+					$translated_title = $translation->post_title ? $translation->post_title : __( '(no title)', 'duplicate-content-addon-for-polylang' );
+
+					foreach ( $source_custom_fields as $field => $c_data ) {
+						$meta_key = $c_data['meta_key'];
+
+						// If this custom field is synchronized in Polylang, identical values are expected.
+						if ( $this->is_post_meta_synced_in_polylang( $meta_key, $c_data['field_object'], $post->ID, $translation_id, $target_slug ) ) {
+							continue;
+						}
+
+						$target_text = $this->get_custom_field_text_value( $translation_id, $field, $meta_key );
+						$original    = $c_data['value'];
+						$translated  = $this->normalize_comparable_text( $target_text );
+
+						if ( '' === $original || $original !== $translated ) {
+							continue;
+						}
+
+						// Skip trivial snippets (counters, symbols)
+						if ( preg_match( '/^[\d\s\.\,\%\$€£₹\/\-\+]+$/u', $original ) ) {
+							continue;
+						}
+
+						$ignore_key = DUPCAP_Ignored_Issues::content_acf_key( $post->ID, $target_slug, $field, $original );
+						if ( DUPCAP_Ignored_Issues::is_ignored( $ignore_key ) ) {
+							continue;
+						}
+
+						$field_label = $c_data['label'];
+						$snippet     = function_exists( 'mb_substr' ) ? mb_substr( $original, 0, 80 ) : substr( $original, 0, 80 );
+						$lang_name   = isset( $language_names[ $target_slug ] )
+							? $language_names[ $target_slug ]
+							: DUPCAP_Elementor_Fields::language_label( $target_slug );
+
+						$by_language[ $target_slug ][] = array(
+							'label'          => sprintf(
+								/* translators: 1: field name, e.g. Custom field "Subtitle" 2: post title 3: language name */
+								__( '%1$s of "%2$s" (%3$s)', 'duplicate-content-addon-for-polylang' ),
+								$field_label,
+								$translated_title,
+								$lang_name ? $lang_name : $target_slug
+							),
+							'message'        => sprintf(
+								/* translators: %s: text that still matches the original language */
+								__( 'Not translated yet — still shows: "%s"', 'duplicate-content-addon-for-polylang' ),
+								$snippet
+							),
+							'action_url'     => get_edit_post_link( $translation_id, 'raw' ),
+							'action_label'   => __( 'Edit translation', 'duplicate-content-addon-for-polylang' ),
+							'ignore_key'     => $ignore_key,
+							'post_id'        => (int) $post->ID,
+							'translation_id' => (int) $translation_id,
+							'language'       => $target_slug,
+							'field'          => $field,
+							'post_type'      => $post->post_type,
+						);
+					}
+				}
+			}
+		}
+
+		foreach ( $by_language as $slug => $details ) {
+			if ( ! empty( $details ) ) {
+				$lang_name  = isset( $language_names[ $slug ] ) ? $language_names[ $slug ] : DUPCAP_Elementor_Fields::language_label( $slug );
+				$lang_label = ( $lang_name && strtolower( $lang_name ) !== strtolower( $slug ) )
+					? sprintf(
+						/* translators: 1: language name, 2: language code */
+						__( '%1$s (%2$s)', 'duplicate-content-addon-for-polylang' ),
+						$lang_name,
+						$slug
+					)
+					: $slug;
+
+				$result = $this->result(
+					'content_acf_' . $slug,
+					DUPCAP_Result::WARNING,
+					/* translators: %s: language name with code */
+					sprintf( __( 'Identical ACF fields in "%s"', 'duplicate-content-addon-for-polylang' ), $lang_label ),
+					sprintf(
+						/* translators: 1: count 2: language name with code */
+						_n(
+							'%1$d translated custom field still matches the original text in "%2$s".',
+							'%1$d translated custom fields still match the original text in "%2$s".',
+							count( $details ),
+							'duplicate-content-addon-for-polylang'
+						),
+						count( $details ),
+						$lang_label
+					)
+				)->with_details( $details );
+
+				$results[] = $result;
+			} else {
+				$results[] = $this->result(
+					'content_acf_' . $slug,
+					DUPCAP_Result::PASS,
+					/* translators: %s: language slug */
+					sprintf( __( 'ACF fields translated in "%s"', 'duplicate-content-addon-for-polylang' ), $slug ),
+					__( 'Linked translations use translated custom fields.', 'duplicate-content-addon-for-polylang' )
+				);
+			}
+		}
+	}
+
+	/**
+	 * Flag Gutenberg / classic translations whose shortcodes or placeholders differ from the source.
+	 *
+	 * A dropped shortcode usually means a form, button or widget vanished from the translated page, and a
+	 * changed %s or {{tag}} shows raw codes to visitors. Counts matter: three buttons in the source and one in
+	 * the translation is reported. Attribute values are ignored, since ids legitimately differ per language.
+	 * Elementor-built posts are not read here, and the result says so. A language with no shortcode or
+	 * placeholder on either side gets no row instead of a reassuring pass.
+	 *
+	 * @since 2.1.2
+	 *
+	 * @param array  $results      Results array (by reference).
+	 * @param array  $post_types   Post types.
+	 * @param array  $languages    Active languages.
+	 * @param string $default_slug Default language slug.
+	 * @return void
+	 */
+	protected function add_placeholder_mismatch_counts( &$results, $post_types, $languages, $default_slug ) {
+		if ( ! function_exists( 'pll_get_post_translations' ) ) {
+			return;
+		}
+
+		$targets = array();
+		foreach ( $languages as $lang ) {
+			$slug = $this->lang_slug( $lang );
+			if ( $slug !== $default_slug ) {
+				$targets[ $slug ] = $lang;
+			}
+		}
+
+		if ( empty( $targets ) ) {
+			return;
+		}
+
+		$rows      = array();
+		$compared  = array();
+		$truncated = array();
+		$found     = array();
+		foreach ( array_keys( $targets ) as $slug ) {
+			$rows[ $slug ]      = array();
+			$compared[ $slug ]  = 0;
+			$truncated[ $slug ] = false;
+			$found[ $slug ]     = 0;
+		}
+
+		foreach ( $post_types as $type ) {
+			// Attachments have no body to compare.
+			if ( 'attachment' === $type ) {
+				continue;
+			}
+
+			foreach ( $this->each_default_language_post( $type, $default_slug ) as $post ) {
+				if ( 'publish' !== $post->post_status ) {
+					continue;
+				}
+
+				$translations  = pll_get_post_translations( $post->ID );
+				$source_tokens = null;
+
+				foreach ( $targets as $slug => $lang ) {
+					$translation_id = ! empty( $translations[ $slug ] ) ? (int) $translations[ $slug ] : 0;
+					if ( ! $translation_id || 'publish' !== get_post_status( $translation_id ) ) {
+						continue;
+					}
+
+					$translation = get_post( $translation_id );
+					if ( ! $translation ) {
+						continue;
+					}
+
+					if ( null === $source_tokens ) {
+						$source_tokens = $this->placeholder_tokens( $this->placeholder_source_text( $post ) );
+					}
+					$target_tokens = $this->placeholder_tokens( $this->placeholder_source_text( $translation ) );
+
+					// Nothing to compare when neither side has a shortcode or placeholder.
+					if ( empty( $source_tokens ) && empty( $target_tokens ) ) {
+						continue;
+					}
+					++$compared[ $slug ];
+
+					$differences = $this->placeholder_differences( $source_tokens, $target_tokens );
+					if ( empty( $differences ) ) {
+						continue;
+					}
+
+					$ignore_key = DUPCAP_Ignored_Issues::content_placeholder_key( $post->ID, $slug, 'placeholder', (string) wp_json_encode( array( $source_tokens, $target_tokens ) ) );
+					if ( DUPCAP_Ignored_Issues::is_ignored( $ignore_key ) ) {
+						continue;
+					}
+
+					++$found[ $slug ];
+					if ( count( $rows[ $slug ] ) >= self::PLACEHOLDER_ROW_CAP ) {
+						$truncated[ $slug ] = true;
+						continue;
+					}
+
+					$lang_name  = ( is_object( $lang ) && ! empty( $lang->name ) ) ? (string) $lang->name : $slug;
+					$type_obj   = get_post_type_object( $post->post_type );
+					$type_label = ( $type_obj && ! empty( $type_obj->labels->singular_name ) ) ? (string) $type_obj->labels->singular_name : __( 'Item', 'duplicate-content-addon-for-polylang' );
+
+					// Name the page by its title; when it has none, by the source's title, and last by its ID.
+					$title = $translation->post_title ? $translation->post_title : $post->post_title;
+					$what  = '' !== (string) $title
+						? sprintf(
+							/* translators: 1: content type, e.g. Page 2: its title */
+							__( '%1$s "%2$s"', 'duplicate-content-addon-for-polylang' ),
+							$type_label,
+							$title
+						)
+						: sprintf(
+							/* translators: 1: content type, e.g. Page 2: its ID number */
+							__( '%1$s #%2$d', 'duplicate-content-addon-for-polylang' ),
+							$type_label,
+							$translation_id
+						);
+
+					$rows[ $slug ][] = array(
+						'label'          => sprintf(
+							/* translators: 1: the page, e.g. Page "About us" 2: language name */
+							__( '%1$s (%2$s)', 'duplicate-content-addon-for-polylang' ),
+							$what,
+							$lang_name
+						),
+						'message'        => implode( ' · ', $differences ),
+						'action_url'     => get_edit_post_link( $translation_id, 'raw' ),
+						'action_label'   => __( 'Edit translation', 'duplicate-content-addon-for-polylang' ),
+						'ignore_key'     => $ignore_key,
+						'post_id'        => (int) $post->ID,
+						'translation_id' => (int) $translation_id,
+						'language'       => $slug,
+						'field'          => 'placeholder',
+						'post_type'      => $post->post_type,
+					);
+				}
+			}
+		}
+
+		foreach ( $targets as $slug => $lang ) {
+			if ( $found[ $slug ] > 0 ) {
+				$message = sprintf(
+					/* translators: 1: count 2: language name with code */
+					_n(
+						'%1$d translated page or post has shortcodes or placeholders that differ from its source in "%2$s".',
+						'%1$d translated pages and posts have shortcodes or placeholders that differ from their source in "%2$s".',
+						$found[ $slug ],
+						'duplicate-content-addon-for-polylang'
+					),
+					$found[ $slug ],
+					$this->lang_label( $lang )
+				);
+				if ( $truncated[ $slug ] ) {
+					$message .= ' ' . sprintf(
+						/* translators: %d: number of rows listed */
+						__( 'Showing the first %d.', 'duplicate-content-addon-for-polylang' ),
+						self::PLACEHOLDER_ROW_CAP
+					);
+				}
+
+				$results[] = $this->result(
+					'content_placeholder_' . $slug,
+					DUPCAP_Result::WARNING,
+					/* translators: %s: language name with code */
+					sprintf( __( 'Shortcode and placeholder mismatch in "%s"', 'duplicate-content-addon-for-polylang' ), $this->lang_label( $lang ) ),
+					$message
+				)->with_details( $rows[ $slug ] );
+			} elseif ( $compared[ $slug ] > 0 ) {
+				$results[] = $this->result(
+					'content_placeholder_' . $slug,
+					DUPCAP_Result::PASS,
+					/* translators: %s: language slug */
+					sprintf( __( 'Placeholders match in "%s"', 'duplicate-content-addon-for-polylang' ), $slug ),
+					sprintf(
+						/* translators: %d: number of pages and posts compared */
+						_n(
+							'Shortcodes and placeholders match in %d translated page or post.',
+							'Shortcodes and placeholders match in %d translated pages and posts.',
+							$compared[ $slug ],
+							'duplicate-content-addon-for-polylang'
+						),
+						$compared[ $slug ]
+					)
+				);
+			}
+		}
+	}
+
+	/**
+	 * Shortcodes, printf specifiers and {{merge tags}} in post content, with how often each appears.
+	 *
+	 * Only shortcodes that are registered count, so "[1]" or "[sic]" in the text is ignored. Block markup
+	 * comments are removed first because they carry JSON such as {"ids":[12]}. printf specifiers and merge
+	 * tags are read from the visible text only, with tags and URLs removed, so a percent-encoded link slug or
+	 * "20%discount" is not mistaken for a placeholder.
+	 *
+	 * @since 2.1.2
+	 *
+	 * @param string $html Raw post content.
+	 * @return array<string, int> Token => number of occurrences.
+	 */
+	protected function placeholder_tokens( $html ) {
+		$tokens = array();
+		$html   = (string) $html;
+
+		if ( '' === trim( $html ) ) {
+			return $tokens;
+		}
+
+		$html = (string) preg_replace( '/<!--.*?-->/s', '', $html );
+
+		$this->count_registered_shortcodes( $html, $tokens );
+
+		$text = html_entity_decode( wp_strip_all_tags( $html ), ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+		$text = (string) preg_replace( '#(?:https?:)?//\S+#i', ' ', $text );
+
+		// %s, %d, %1$s, %.2f, %05d. Not after a word character or another %, and not followed by a letter.
+		if ( preg_match_all( '/(?<![\w%])%(?:\d+\$)?[-+0#]*\d*(?:\.\d+)?[sdfFeEu](?![A-Za-z])/', $text, $matches ) ) {
+			foreach ( $matches[0] as $token ) {
+				$tokens[ $token ] = isset( $tokens[ $token ] ) ? $tokens[ $token ] + 1 : 1;
+			}
+		}
+
+		if ( preg_match_all( '/\{\{\s*([a-zA-Z0-9_.]+)\s*\}\}/', $text, $matches ) ) {
+			foreach ( $matches[1] as $tag ) {
+				$token            = '{{' . $tag . '}}';
+				$tokens[ $token ] = isset( $tokens[ $token ] ) ? $tokens[ $token ] + 1 : 1;
+			}
+		}
+
+		return $tokens;
+	}
+
+	/**
+	 * The text to read shortcodes and placeholders from.
+	 *
+	 * Gutenberg and classic posts keep everything in post_content. An Elementor page keeps
+	 * its text in _elementor_data, so read the text fields of its widgets instead (the
+	 * same fields the outdated check reads). Styles and settings are not included.
+	 *
+	 * @since 2.1.2
+	 *
+	 * @param WP_Post $post Post.
+	 * @return string
+	 */
+	protected function placeholder_source_text( $post ) {
+		if ( ! $this->is_elementor_built( $post->ID ) ) {
+			return (string) $post->post_content;
+		}
+
+		$raw  = get_post_meta( (int) $post->ID, DUPCAP_Elementor_Document::META_DATA, true );
+		$tree = is_string( $raw ) ? json_decode( $raw, true ) : $raw;
+		if ( ! is_array( $tree ) ) {
+			return '';
+		}
+
+		// One "widget|field=text" line per field. Keep the text after the first "=".
+		$lines = array();
+		foreach ( explode( "
+", DUPCAP_Elementor_Fields::content_signature( $tree ) ) as $line ) {
+			$pos = strpos( $line, '=' );
+			if ( false !== $pos ) {
+				$lines[] = substr( $line, $pos + 1 );
+			}
+		}
+
+		return implode( "
+", $lines );
+	}
+
+	/**
+	 * Count registered shortcodes in content, including ones nested inside another shortcode.
+	 *
+	 * @since 2.1.2
+	 *
+	 * @param string             $content Content to read.
+	 * @param array<string, int> $tokens  Token => count, by reference.
+	 * @return void
+	 */
+	protected function count_registered_shortcodes( $content, array &$tokens ) {
+		global $shortcode_tags;
+
+		if ( empty( $shortcode_tags ) || false === strpos( $content, '[' ) ) {
+			return;
+		}
+
+		$pattern = get_shortcode_regex( array_keys( $shortcode_tags ) );
+		if ( ! preg_match_all( '/' . $pattern . '/', $content, $matches, PREG_SET_ORDER ) ) {
+			return;
+		}
+
+		foreach ( $matches as $match ) {
+			// [[tag]] is an escaped shortcode: shown as text, never run.
+			if ( '[' === $match[1] && ']' === $match[6] ) {
+				continue;
+			}
+
+			$token            = '[' . $match[2] . ']';
+			$tokens[ $token ] = isset( $tokens[ $token ] ) ? $tokens[ $token ] + 1 : 1;
+
+			if ( '' !== $match[5] ) {
+				$this->count_registered_shortcodes( $match[5], $tokens );
+			}
+		}
+	}
+
+	/**
+	 * Plain-language list of the placeholders that differ between source and translation.
+	 *
+	 * @since 2.1.2
+	 *
+	 * @param array<string, int> $source Source tokens.
+	 * @param array<string, int> $target Translation tokens.
+	 * @return string[] One sentence per direction; empty when they match.
+	 */
+	protected function placeholder_differences( array $source, array $target ) {
+		$missing = array();
+		$extra   = array();
+
+		foreach ( array_unique( array_merge( array_keys( $source ), array_keys( $target ) ) ) as $token ) {
+			$in_source = isset( $source[ $token ] ) ? $source[ $token ] : 0;
+			$in_target = isset( $target[ $token ] ) ? $target[ $token ] : 0;
+
+			// Gone completely or only in the translation: name it. Numbers only help when it is still there but a different number of times.
+			if ( $in_source > 0 && $in_target > 0 ) {
+				$counts = sprintf(
+					/* translators: 1: what it is, e.g. shortcode 2: the token, e.g. [button] 3: times it appears in the original 4: times it appears in the translation */
+					__( '%1$s %2$s (%3$d in the original, %4$d in the translation)', 'duplicate-content-addon-for-polylang' ),
+					$this->placeholder_kind( $token ),
+					$token,
+					$in_source,
+					$in_target
+				);
+			} else {
+				$counts = sprintf(
+					/* translators: 1: what it is, e.g. shortcode 2: the token, e.g. [button] */
+					__( '%1$s %2$s', 'duplicate-content-addon-for-polylang' ),
+					$this->placeholder_kind( $token ),
+					$token
+				);
+			}
+
+			if ( $in_source > $in_target ) {
+				$missing[] = $counts;
+			} elseif ( $in_target > $in_source ) {
+				$extra[] = $counts;
+			}
+		}
+
+		$parts = array();
+		if ( ! empty( $missing ) ) {
+			$parts[] = sprintf(
+				/* translators: %s: list of shortcodes and placeholders */
+				__( 'Missing in the translation: %s', 'duplicate-content-addon-for-polylang' ),
+				$this->placeholder_list( $missing )
+			);
+		}
+		if ( ! empty( $extra ) ) {
+			$parts[] = sprintf(
+				/* translators: %s: list of shortcodes and placeholders */
+				__( 'Not in the original: %s', 'duplicate-content-addon-for-polylang' ),
+				$this->placeholder_list( $extra )
+			);
+		}
+
+		return $parts;
+	}
+
+	/**
+	 * Plain name for a token, so the row says what kind of thing it is.
+	 *
+	 * @since 2.1.2
+	 *
+	 * @param string $token Shortcode like [button], merge tag like {{name}}, or printf code like %s.
+	 * @return string
+	 */
+	protected function placeholder_kind( $token ) {
+		if ( 0 === strpos( $token, '[' ) ) {
+			return __( 'shortcode', 'duplicate-content-addon-for-polylang' );
+		}
+
+		if ( 0 === strpos( $token, '{{' ) ) {
+			return __( 'merge tag', 'duplicate-content-addon-for-polylang' );
+		}
+
+		return __( 'placeholder', 'duplicate-content-addon-for-polylang' );
+	}
+
+	/**
+	 * Comma-separated list, cut after five entries.
+	 *
+	 * @param string[] $items Entries.
+	 * @return string
+	 */
+	protected function placeholder_list( array $items ) {
+		$list = implode( ', ', array_slice( $items, 0, 5 ) );
+
+		return count( $items ) > 5 ? $list . ' …' : $list;
+	}
+
+	/**
+	 * Whether a reported placeholder mismatch is still there, for the single-row rescan.
+	 *
+	 * @since 2.1.2
+	 *
+	 * @param int $post_id        Source post ID.
+	 * @param int $translation_id Translation post ID.
+	 * @return bool
+	 */
+	public function placeholder_mismatch_still_present( $post_id, $translation_id ) {
+		$post_id        = (int) $post_id;
+		$translation_id = (int) $translation_id;
+
+		if ( $post_id <= 0 || $translation_id <= 0 ) {
+			return true;
+		}
+
+		clean_post_cache( $post_id );
+		clean_post_cache( $translation_id );
+
+		$source      = get_post( $post_id );
+		$translation = get_post( $translation_id );
+
+		if ( ! $source || ! $translation || 'publish' !== $translation->post_status ) {
+			return false;
+		}
+
+		return array() !== $this->placeholder_differences(
+			$this->placeholder_tokens( $this->placeholder_source_text( $source ) ),
+			$this->placeholder_tokens( $this->placeholder_source_text( $translation ) )
+		);
 	}
 
 	/**
@@ -1275,7 +2021,7 @@ class DUPCAP_Check_Content extends DUPCAP_Check {
 	 *
 	 * @param int    $post_id        Source post ID.
 	 * @param int    $translation_id Translation post ID.
-	 * @param string $field          title|content.
+	 * @param string $field          title|content|acf_*|meta_*|el_{element}_{key}.
 	 * @return bool
 	 */
 	public function identical_field_still_present( $post_id, $translation_id, $field ) {
@@ -1283,18 +2029,77 @@ class DUPCAP_Check_Content extends DUPCAP_Check {
 		$translation_id = (int) $translation_id;
 		$field          = sanitize_key( (string) $field );
 
-		if ( $post_id <= 0 || $translation_id <= 0 || ! in_array( $field, array( 'title', 'content' ), true ) ) {
+		$is_title_or_content = in_array( $field, array( 'title', 'content' ), true );
+		$is_custom_field     = ( 0 === strpos( $field, 'acf_' ) || 0 === strpos( $field, 'meta_' ) );
+		$is_elementor_field  = ( 0 === strpos( $field, 'el_' ) );
+
+		if ( $post_id <= 0 || $translation_id <= 0 || ( ! $is_title_or_content && ! $is_custom_field && ! $is_elementor_field ) ) {
 			return true;
 		}
 
-		// The scan skips Elementor-built translations, so there is nothing to report.
-		if ( $this->is_elementor_built( $translation_id ) ) {
+		// The scan skips Elementor-built translations for title/content, but ACF/custom fields and widget text are inspected.
+		if ( ! $is_custom_field && ! $is_elementor_field && $this->is_elementor_built( $translation_id ) ) {
 			return false;
 		}
 
-		global $wpdb;
 		clean_post_cache( $post_id );
 		clean_post_cache( $translation_id );
+
+		if ( $is_elementor_field ) {
+			if ( function_exists( 'wp_cache_delete' ) ) {
+				wp_cache_delete( $post_id, 'post_meta' );
+				wp_cache_delete( $translation_id, 'post_meta' );
+			}
+
+			$still_shared = $this->elementor_same_text_fields(
+				new DUPCAP_Elementor_Document( $post_id ),
+				new DUPCAP_Elementor_Document( $translation_id )
+			);
+			foreach ( $still_shared as $item ) {
+				if ( $item['field'] === $field ) {
+					return true;
+				}
+			}
+			return false;
+		}
+
+		if ( $is_custom_field ) {
+			$meta_key = ( 0 === strpos( $field, 'acf_' ) ) ? substr( $field, 4 ) : substr( $field, 5 );
+			$lang     = function_exists( 'pll_get_post_language' ) ? (string) pll_get_post_language( $translation_id ) : '';
+
+			if ( function_exists( 'wp_cache_delete' ) ) {
+				wp_cache_delete( $post_id, 'post_meta' );
+				wp_cache_delete( $translation_id, 'post_meta' );
+			}
+
+			// The scan's own field definition carries the Polylang setting, including one inherited from a parent field.
+			$source_fields = $this->get_translatable_custom_fields( $post_id );
+			$field_object  = ( isset( $source_fields[ $field ] ) && is_array( $source_fields[ $field ]['field_object'] ) ) ? $source_fields[ $field ]['field_object'] : null;
+
+			// If the custom field is now set to synchronize in Polylang, identical values are expected.
+			if ( $this->is_post_meta_synced_in_polylang( $meta_key, $field_object, $post_id, $translation_id, $lang ) ) {
+				return false;
+			}
+
+			$source_val = $this->get_custom_field_text_value( $post_id, $field, $meta_key );
+			$target_val = $this->get_custom_field_text_value( $translation_id, $field, $meta_key );
+
+			$original   = $this->normalize_comparable_text( (string) $source_val );
+			$translated = $this->normalize_comparable_text( (string) $target_val );
+
+			if ( '' === $original || $original !== $translated ) {
+				return false;
+			}
+
+			// Counters and symbol-only strings are never reported by the scan.
+			if ( preg_match( '/^[\d\s\.\,\%\$€£₹\/\-\+]+$/u', $original ) ) {
+				return false;
+			}
+
+			return true;
+		}
+
+		global $wpdb;
 
 		// Both columns in one prepared query, so the field never reaches the SQL.
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Fresh read after cache bust; the user just saved this post.
@@ -1327,6 +2132,338 @@ class DUPCAP_Check_Content extends DUPCAP_Check {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Extract translatable text value for a custom field from a post.
+	 *
+	 * @param int    $post_id   Post ID.
+	 * @param string $field_key Field key with acf_ or meta_ prefix.
+	 * @param string $meta_key  Underlying meta key name.
+	 * @return string
+	 */
+	public function get_custom_field_text_value( $post_id, $field_key, $meta_key ) {
+		$text = '';
+		if ( 0 === strpos( $field_key, 'acf_' ) && function_exists( 'get_field_object' ) ) {
+			$field_obj = get_field_object( $meta_key, $post_id, false );
+			if ( is_array( $field_obj ) && isset( $field_obj['value'] ) ) {
+				$val  = $field_obj['value'];
+				$type = isset( $field_obj['type'] ) ? (string) $field_obj['type'] : '';
+				if ( 'link' === $type && is_array( $val ) ) {
+					$text = isset( $val['title'] ) ? (string) $val['title'] : '';
+				} elseif ( is_string( $val ) ) {
+					$text = $val;
+				}
+			}
+		}
+
+		if ( '' === $text ) {
+			$raw = get_post_meta( $post_id, $meta_key, true );
+			if ( is_string( $raw ) ) {
+				$text = $raw;
+			}
+		}
+
+		return $text;
+	}
+
+	/**
+	 * Retrieve candidate translatable custom fields for a post.
+	 *
+	 * Detects text-based ACF fields and non-internal public post meta.
+	 *
+	 * @param int $post_id Post ID.
+	 * @return array<string, array<string, mixed>>
+	 */
+	public function get_translatable_custom_fields( $post_id ) {
+		$fields = array();
+
+		// 1. ACF fields if ACF is active.
+		if ( function_exists( 'get_field_objects' ) ) {
+			$acf_fields = get_field_objects( $post_id, false );
+			if ( is_array( $acf_fields ) ) {
+				foreach ( $acf_fields as $field_name => $field_obj ) {
+					if ( empty( $field_name ) || ! is_array( $field_obj ) ) {
+						continue;
+					}
+					$label = ! empty( $field_obj['label'] ) ? (string) $field_obj['label'] : (string) $field_name;
+					$this->collect_acf_text_fields( $fields, (int) $post_id, $field_obj, (string) $field_name, isset( $field_obj['value'] ) ? $field_obj['value'] : null, $label, '' );
+				}
+			}
+		}
+
+		// 2. Standard public post meta (only if ACF is not active, skipping internal and theme keys).
+		if ( empty( $fields ) && ! function_exists( 'get_field_objects' ) ) {
+			$all_meta = get_post_meta( $post_id );
+			if ( is_array( $all_meta ) ) {
+				foreach ( $all_meta as $key => $values ) {
+					$key = (string) $key;
+					if ( '' === $key || 0 === strpos( $key, '_' ) ) {
+						continue;
+					}
+					// Skip theme/plugin layout settings.
+					if ( preg_match( '/^(ast[-_]|astra[-_]|site[-_]|surerank|rank_math|seopress|aioseo)/i', $key ) ) {
+						continue;
+					}
+					// Skip non-content system keys.
+					if ( in_array( $key, array( 'inline_featured_image' ), true ) ) {
+						continue;
+					}
+					if ( ! is_array( $values ) || empty( $values ) ) {
+						continue;
+					}
+					$val = $values[0];
+					if ( ! is_string( $val ) || '' === trim( $val ) ) {
+						continue;
+					}
+					// Skip serialized structures or JSON.
+					if ( is_serialized( $val ) || ( 0 === strpos( $val, '{' ) && null !== json_decode( $val ) ) ) {
+						continue;
+					}
+
+					$normalized = $this->normalize_comparable_text( $val );
+					if ( '' === $normalized ) {
+						continue;
+					}
+
+					$label = ucwords( str_replace( array( '-', '_' ), ' ', $key ) );
+					$fields[ 'meta_' . $key ] = array(
+						// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- A field descriptor key in a plain array, not a meta query.
+						'meta_key'     => $key,
+						'label'        => sprintf(
+							/* translators: %s: custom field label */
+							__( 'Custom field "%s"', 'duplicate-content-addon-for-polylang' ),
+							$label
+						),
+						'value'        => $normalized,
+						'field_object' => null,
+					);
+				}
+			}
+		}
+
+		return $fields;
+	}
+
+	/**
+	 * Add one ACF field to the candidate list, or walk into it when it holds sub fields.
+	 *
+	 * ACF stores nested values under meta keys built from the path, so a repeater row
+	 * is "team_0_name" and a group member is "hero_title". The same key is used on
+	 * the translation, which keeps the source and translation comparison aligned.
+	 *
+	 * @since 2.1.2
+	 *
+	 * Unformatted ACF values only carry a repeater's row count and a flexible content field's
+	 * layout names, so the values inside rows are read from post meta by their path.
+	 *
+	 * @param array<string, array<string, mixed>> $fields             Candidates, by reference.
+	 * @param int                                 $post_id            Post ID.
+	 * @param array<string, mixed>                $field_obj          ACF field definition.
+	 * @param string                              $meta_key           Meta key for this field, including its path.
+	 * @param mixed                               $value              Unformatted field value, or null to read it from post meta.
+	 * @param string                              $label              Display label including its path.
+	 * @param string                              $parent_translations Polylang Pro "translations" setting of the parent field.
+	 * @return void
+	 */
+	protected function collect_acf_text_fields( array &$fields, $post_id, array $field_obj, $meta_key, $value, $label, $parent_translations ) {
+		$type = isset( $field_obj['type'] ) ? (string) $field_obj['type'] : '';
+
+		// Polylang Pro synchronizes a whole parent field unless a sub field is set to translate.
+		$own = isset( $field_obj['translations'] ) ? (string) $field_obj['translations'] : '';
+		if ( 'sync' === $parent_translations && ! in_array( $own, array( 'translate', 'translate_once' ), true ) ) {
+			$field_obj['translations'] = 'sync';
+		} elseif ( '' === $own && '' !== $parent_translations ) {
+			$field_obj['translations'] = $parent_translations;
+		}
+		$effective = isset( $field_obj['translations'] ) ? (string) $field_obj['translations'] : '';
+
+		if ( in_array( $type, array( 'group', 'repeater', 'flexible_content' ), true ) ) {
+			if ( null === $value ) {
+				$value = get_post_meta( (int) $post_id, $meta_key, true );
+			}
+
+			if ( 'group' === $type ) {
+				// A group's value is keyed by sub field key; inside a row there is none, so children read their own meta.
+				$sub_value = function ( $group, array $sub ) {
+					if ( is_array( $group ) && isset( $sub['key'], $group[ $sub['key'] ] ) ) {
+						return $group[ $sub['key'] ];
+					}
+					return null;
+				};
+				foreach ( (array) ( isset( $field_obj['sub_fields'] ) ? $field_obj['sub_fields'] : array() ) as $sub ) {
+					if ( ! is_array( $sub ) || empty( $sub['name'] ) ) {
+						continue;
+					}
+					$this->collect_acf_text_fields(
+						$fields,
+						$post_id,
+						$sub,
+						$meta_key . '_' . $sub['name'],
+						$sub_value( $value, $sub ),
+						$label . ' › ' . ( ! empty( $sub['label'] ) ? $sub['label'] : $sub['name'] ),
+						$effective
+					);
+				}
+				return;
+			}
+
+			/**
+			 * Max rows read per repeater or flexible content field.
+			 *
+			 * @param int $limit Row limit.
+			 */
+			$row_limit = max( 1, (int) apply_filters( 'dupcap_acf_nested_row_limit', 50 ) );
+
+			// Repeater: the value is the row count. Flexible content: the list of layout names, one per row.
+			$rows = array();
+			if ( 'repeater' === $type ) {
+				$rows = array_fill( 0, max( 0, min( $row_limit, is_array( $value ) ? count( $value ) : (int) $value ) ), '' );
+			} elseif ( is_array( $value ) ) {
+				$rows = array_slice( array_values( $value ), 0, $row_limit );
+			}
+
+			foreach ( $rows as $index => $row ) {
+				$sub_fields = isset( $field_obj['sub_fields'] ) ? $field_obj['sub_fields'] : array();
+				if ( 'flexible_content' === $type ) {
+					$sub_fields = array();
+					$layout     = is_string( $row ) ? $row : '';
+					foreach ( (array) ( isset( $field_obj['layouts'] ) ? $field_obj['layouts'] : array() ) as $layout_def ) {
+						if ( is_array( $layout_def ) && isset( $layout_def['name'] ) && $layout === (string) $layout_def['name'] ) {
+							$sub_fields = isset( $layout_def['sub_fields'] ) ? $layout_def['sub_fields'] : array();
+							break;
+						}
+					}
+				}
+
+				foreach ( (array) $sub_fields as $sub ) {
+					if ( ! is_array( $sub ) || empty( $sub['name'] ) ) {
+						continue;
+					}
+					$this->collect_acf_text_fields(
+						$fields,
+						$post_id,
+						$sub,
+						$meta_key . '_' . $index . '_' . $sub['name'],
+						null,
+						sprintf(
+							/* translators: 1: repeater or flexible content label 2: row number 3: sub field label */
+							__( '%1$s #%2$d › %3$s', 'duplicate-content-addon-for-polylang' ),
+							$label,
+							$index + 1,
+							! empty( $sub['label'] ) ? $sub['label'] : $sub['name']
+						),
+						$effective
+					);
+				}
+			}
+			return;
+		}
+
+		if ( ! in_array( $type, array( 'text', 'textarea', 'wysiwyg', 'url', 'email', 'link' ), true ) ) {
+			return;
+		}
+
+		if ( null === $value ) {
+			$value = get_post_meta( (int) $post_id, $meta_key, true );
+		}
+
+		$text_val = '';
+		if ( 'link' === $type && is_array( $value ) ) {
+			$text_val = isset( $value['title'] ) ? (string) $value['title'] : '';
+		} elseif ( is_string( $value ) ) {
+			$text_val = $value;
+		}
+
+		$normalized = $this->normalize_comparable_text( $text_val );
+		if ( '' === $normalized ) {
+			return;
+		}
+
+		$fields[ 'acf_' . $meta_key ] = array(
+			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- A field descriptor key in a plain array, not a meta query.
+			'meta_key'     => (string) $meta_key,
+			'label'        => sprintf(
+				/* translators: %s: custom field label */
+				__( 'Custom field "%s"', 'duplicate-content-addon-for-polylang' ),
+				$label
+			),
+			'value'        => $normalized,
+			'field_object' => $field_obj,
+		);
+	}
+
+	/**
+	 * Check whether a custom field is synchronized across translations in Polylang.
+	 *
+	 * Checks ACF field configuration in Polylang Pro, Polylang global sync settings,
+	 * and the pll_copy_post_metas filter.
+	 *
+	 * @param string     $meta_key       Custom field meta key name.
+	 * @param array|null $field_object   Optional ACF field definition object.
+	 * @param int        $source_id      Source post ID.
+	 * @param int        $translation_id Translation post ID.
+	 * @param string     $lang           Target language slug.
+	 * @return bool True if synchronized (identical content is expected), false if unsynced.
+	 */
+	public function is_post_meta_synced_in_polylang( $meta_key, $field_object = null, $source_id = 0, $translation_id = 0, $lang = '' ) {
+		$meta_key = (string) $meta_key;
+		if ( '' === $meta_key ) {
+			return false;
+		}
+
+		// 1. Check field-level translation setting in Polylang Pro ACF integration.
+		if ( is_array( $field_object ) && isset( $field_object['translations'] ) ) {
+			if ( 'sync' === $field_object['translations'] ) {
+				return true;
+			}
+			// Polylang Pro "Translate" and "Translate once": the translator is expected to change the value.
+			if ( in_array( $field_object['translations'], array( 'translate', 'translate_once' ), true ) ) {
+				return false;
+			}
+		}
+
+		if ( null === $field_object && function_exists( 'acf_get_field' ) ) {
+			$acf_field = acf_get_field( $meta_key );
+			if ( is_array( $acf_field ) && isset( $acf_field['translations'] ) ) {
+				if ( 'sync' === $acf_field['translations'] ) {
+					return true;
+				}
+				if ( in_array( $acf_field['translations'], array( 'translate', 'translate_once' ), true ) ) {
+					return false;
+				}
+			}
+		}
+
+		// 2. Check Polylang global synchronization options.
+		$sync_options = $this->option( 'sync', null );
+		if ( null === $sync_options ) {
+			$pll_options = get_option( 'polylang' );
+			if ( is_array( $pll_options ) && isset( $pll_options['sync'] ) ) {
+				$sync_options = $pll_options['sync'];
+			}
+		}
+
+		$is_global_sync = is_array( $sync_options ) && in_array( 'post_meta', $sync_options, true );
+
+		// 3. Polylang filter allows plugins/themes to customize synchronized meta keys.
+		if ( function_exists( 'apply_filters' ) ) {
+			$filtered_keys = apply_filters(
+				// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Polylang's own filter, applied here to read which meta keys it copies.
+				'pll_copy_post_metas',
+				$is_global_sync ? array( $meta_key ) : array(),
+				true,
+				(int) $source_id,
+				(int) $translation_id,
+				(string) $lang
+			);
+
+			if ( is_array( $filtered_keys ) ) {
+				return in_array( $meta_key, $filtered_keys, true );
+			}
+		}
+
+		return $is_global_sync;
 	}
 
 	/**
@@ -2028,7 +3165,7 @@ class DUPCAP_Check_Content extends DUPCAP_Check {
 	 * @param string  $lang_slug Target language slug.
 	 * @return string
 	 */
-	protected function translation_link( $post, $lang_slug ) {
+	public function translation_link( $post, $lang_slug ) {
 		$pll = function_exists( 'PLL' ) ? PLL() : null;
 		if ( ! $pll || ! isset( $pll->model ) ) {
 			return '';

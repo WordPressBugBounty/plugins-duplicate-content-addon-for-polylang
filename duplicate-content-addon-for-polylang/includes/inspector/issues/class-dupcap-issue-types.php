@@ -25,6 +25,8 @@ final class DUPCAP_Issue_Types {
 	const CONTENT_NOLANG     = 'content_nolang';
 	const CONTENT_MISSING    = 'content_missing';
 	const CONTENT_IDENTICAL  = 'content_identical';
+	const CONTENT_ACF        = 'content_acf';
+	const CONTENT_PLACEHOLDER = 'content_placeholder';
 	const CONTENT_LINKS      = 'content_links';
 	const CONTENT_DRAFT      = 'content_draft';
 	const CONTENT_SOURCE_UPDATED = 'content_source_updated';
@@ -145,6 +147,7 @@ final class DUPCAP_Issue_Types {
 			self::CONTENT_NOLANG,
 			self::CONTENT_MISSING,
 			self::CONTENT_IDENTICAL,
+			self::CONTENT_PLACEHOLDER,
 			self::CONTENT_LINKS,
 			self::CONTENT_DRAFT,
 			self::CONTENT_SOURCE_UPDATED,

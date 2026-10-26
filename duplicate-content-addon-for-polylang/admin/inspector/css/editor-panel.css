@@ -1,0 +1,539 @@
+/**
+ * Translation Inspector - Editor Panel & Visual Diff Styles
+ */
+
+/* ==========================================================================
+   Badges & Status Indicators
+   ========================================================================== */
+.dupcap-editor-status-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 4px 10px;
+	border-radius: 12px;
+	font-size: 12px;
+	font-weight: 600;
+	line-height: 1.3;
+}
+
+.dupcap-editor-status-badge .dashicons {
+	font-size: 16px;
+	width: 16px;
+	height: 16px;
+}
+
+.dupcap-editor-status-badge--warn,
+.dupcap-pill--warn {
+	background: #fcf0db;
+	color: #995c00;
+	border: 1px solid #f6cf7d;
+}
+
+.dupcap-editor-status-badge--pass,
+.dupcap-pill--pass {
+	background: #e7f5ea;
+	color: #1b6329;
+	border: 1px solid #b2dcb9;
+}
+
+.dupcap-editor-status-badge--crit,
+.dupcap-pill--crit {
+	background: #fde8e8;
+	color: #9b1c1c;
+	border: 1px solid #f8b4b4;
+}
+
+.dupcap-editor-status-badge--info,
+.dupcap-pill--info {
+	background: #e8f0fe;
+	color: #1a56db;
+	border: 1px solid #b4c6fc;
+}
+
+.dupcap-badge--source {
+	background: #f0f0f1;
+	color: #1d2327;
+	border: 1px solid #c3c4c7;
+	padding: 4px 8px;
+	border-radius: 4px;
+	font-weight: 600;
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+}
+
+/* ==========================================================================
+   Editor Notice Boxes
+   ========================================================================== */
+
+.dupcap-editor-trans-header {
+	display: block;
+}
+
+.dupcap-editor-status-row {
+	margin-bottom: 10px;
+}
+
+.dupcap-editor-notice {
+	margin: 0 0 14px;
+	padding: 10px 12px;
+	border-radius: 4px;
+	font-size: 13px;
+	line-height: 1.5;
+}
+
+.dupcap-editor-notice p {
+	margin: 0;
+}
+
+.dupcap-editor-notice--warn {
+	background: #fff8e5;
+	border-inline-start: 4px solid #dba617;
+	color: #554100;
+}
+
+.dupcap-editor-notice--pass {
+	background: #f0f9eb;
+	border-inline-start: 4px solid #46b450;
+	color: #18521a;
+}
+
+.dupcap-editor-notice--crit {
+	background: #fde8e8;
+	border-inline-start: 4px solid #d63638;
+	color: #7a1818;
+}
+
+.dupcap-editor-notice--info {
+	background: #e8f0fe;
+	border-inline-start: 4px solid #3858e9;
+	color: #1a3a8a;
+}
+
+.dupcap-editor-meta-line {
+	margin: 8px 0;
+	font-size: 13px;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	flex-wrap: wrap;
+}
+
+.dupcap-lang-flag {
+	vertical-align: middle;
+	border-radius: 2px;
+	box-shadow: 0 0 1px rgba(0, 0, 0, 0.3);
+}
+
+.dupcap-editor-changed-fields {
+	margin: 12px 0 8px;
+	font-size: 12px;
+}
+
+.dupcap-editor-changed-fields ul {
+	margin: 4px 0 0 18px;
+	list-style: disc;
+}
+
+.dupcap-editor-changed-fields li {
+	margin-bottom: 3px;
+	color: #3c434a;
+}
+
+/* Short lists of changed fields (the sidebar is narrow). */
+.dupcap-editor-list {
+	margin: 4px 0 0 18px;
+	list-style: disc;
+}
+
+.dupcap-editor-list li {
+	margin-bottom: 4px;
+	color: #3c434a;
+}
+
+/* Changed / New / Removed tags: text and color, never color alone. */
+.dupcap-change-tag {
+	display: inline-block;
+	margin-inline-start: 4px;
+	padding: 0 6px;
+	border-radius: 8px;
+	font-size: 11px;
+	font-weight: 600;
+	line-height: 18px;
+	vertical-align: middle;
+}
+
+.dupcap-change-tag--changed {
+	background: #fcf0db;
+	color: #7a4a00;
+}
+
+.dupcap-change-tag--added {
+	background: #e7f5ea;
+	color: #1b6329;
+}
+
+.dupcap-change-tag--removed {
+	background: #fde8e8;
+	color: #9b1c1c;
+}
+
+/* ==========================================================================
+   Action Buttons
+   ========================================================================== */
+.dupcap-editor-actions {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	margin-top: 14px;
+	padding-top: 10px;
+	border-top: 1px solid #f0f0f1;
+}
+
+.dupcap-editor-actions .button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	text-align: center;
+	width: 100%;
+	padding: 4px 10px;
+	min-height: 32px;
+}
+
+.dupcap-editor-actions .button .dashicons {
+	font-size: 16px;
+	width: 16px;
+	height: 16px;
+}
+
+.dupcap-editor-actions .button-primary .dashicons,
+.dupcap-editor-actions .button.button-primary .dashicons {
+	color: #ffffff !important;
+}
+
+.dupcap-editor-actions .components-button {
+	width: 100%;
+	justify-content: center;
+}
+
+.dupcap-editor-actions .description {
+	margin: 0;
+	color: #646970;
+	font-size: 12px;
+}
+
+/* ==========================================================================
+   Translations List (on Source Posts)
+   ========================================================================== */
+.dupcap-editor-trans-list {
+	margin-top: 10px;
+}
+
+.dupcap-editor-trans-items {
+	margin: 8px 0 0;
+	padding: 0;
+	list-style: none;
+}
+
+.dupcap-editor-trans-item {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 6px 0;
+	border-bottom: 1px solid #f6f7f7;
+	font-size: 13px;
+}
+
+.dupcap-editor-trans-info {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.dupcap-editor-lang-name {
+	font-weight: 500;
+}
+
+.dupcap-pill {
+	font-size: 11px;
+	padding: 2px 7px;
+	border-radius: 10px;
+	font-weight: 600;
+}
+
+/* ==========================================================================
+   Block Editor Sidebar Panel
+   ========================================================================== */
+.dupcap-gutenberg-panel {
+	padding: 0;
+}
+
+.dupcap-gutenberg-panel .components-base-control {
+	margin-bottom: 12px;
+}
+
+.dupcap-gutenberg-loading {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 12px 0;
+	color: #646970;
+	font-size: 13px;
+}
+
+/* ==========================================================================
+   "What changed" dialog (Block Editor & Classic)
+   ========================================================================== */
+.dupcap-diff-gutenberg-modal {
+	width: min(960px, 94vw);
+}
+
+.dupcap-diff-intro,
+.dupcap-diff-modal-intro p {
+	margin: 0 0 4px;
+	font-size: 13px;
+}
+
+.dupcap-diff-modal-intro {
+	padding: 12px 20px 0;
+}
+
+.dupcap-diff-modal-loading,
+.dupcap-diff-error {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	color: #50575e;
+}
+
+.dupcap-diff-error {
+	color: #b32d2e;
+	margin: 0 0 12px;
+	padding: 10px 12px;
+	background: #fde8e8;
+	border-inline-start: 4px solid #d63638;
+	border-radius: 4px;
+	font-size: 13px;
+	line-height: 1.5;
+}
+
+.dupcap-diff-modal-footer .dupcap-diff-error {
+	margin: 0;
+	margin-inline-end: auto;
+	padding: 0;
+	background: none;
+	border: 0;
+}
+
+.dupcap-diff-gutenberg-modal .dupcap-diff-modal-toolbar {
+	margin: 12px 0;
+	padding: 8px 12px;
+	border-radius: 4px;
+}
+
+.dupcap-diff-gutenberg-modal .dupcap-diff-modal-footer {
+	margin-top: 8px;
+	padding: 14px 0 0;
+}
+
+/* ==========================================================================
+   Visual Diff Modal (Block Editor & Classic)
+   ========================================================================== */
+.dupcap-diff-modal-overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba(0, 0, 0, 0.65);
+	z-index: 100000;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 20px;
+	box-sizing: border-box;
+}
+
+.dupcap-diff-modal {
+	background: #fff;
+	border-radius: 6px;
+	width: 100%;
+	max-width: 900px;
+	max-height: 85vh;
+	display: flex;
+	flex-direction: column;
+	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+	overflow: hidden;
+}
+
+.dupcap-diff-modal-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 16px 20px;
+	border-bottom: 1px solid #dcdcde;
+	background: #f8f9fa;
+}
+
+.dupcap-diff-modal-title {
+	margin: 0;
+	font-size: 17px;
+	font-weight: 600;
+	color: #1d2327;
+}
+
+.dupcap-diff-modal-close {
+	background: none;
+	border: none;
+	font-size: 20px;
+	cursor: pointer;
+	color: #50575e;
+	padding: 4px;
+	border-radius: 4px;
+}
+
+.dupcap-diff-modal-close:hover {
+	color: #d63638;
+}
+
+.dupcap-diff-modal-toolbar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 10px 20px;
+	background: #f0f0f1;
+	border-bottom: 1px solid #dcdcde;
+}
+
+.dupcap-diff-view-toggle {
+	display: flex;
+	gap: 4px;
+}
+
+.dupcap-diff-view-toggle button {
+	padding: 4px 10px;
+	font-size: 12px;
+	border-radius: 3px;
+	border: 1px solid #c3c4c7;
+	background: #fff;
+	cursor: pointer;
+}
+
+.dupcap-diff-view-toggle button.active {
+	background: #2271b1;
+	border-color: #2271b1;
+	color: #fff;
+}
+
+.dupcap-diff-modal-body {
+	padding: 20px;
+	overflow-y: auto;
+	flex: 1;
+}
+
+.dupcap-diff-field-block {
+	margin-bottom: 24px;
+}
+
+.dupcap-diff-field-title {
+	font-size: 14px;
+	font-weight: 600;
+	color: #2c3338;
+	margin: 0 0 8px;
+	padding-bottom: 4px;
+	border-bottom: 1px solid #e0e0e0;
+}
+
+.dupcap-diff-modal-footer {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 10px;
+	padding: 14px 20px;
+	border-top: 1px solid #dcdcde;
+	background: #f8f9fa;
+}
+
+/* ==========================================================================
+   Table text diff overrides (matching WP revisions style)
+   ========================================================================== */
+.dupcap-diff-modal table.diff,
+.dupcap-diff-modal-body table.diff {
+	width: 100%;
+	border-collapse: collapse;
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	margin-bottom: 12px;
+	font-family: Consolas, Monaco, monospace;
+	font-size: 13px;
+}
+
+.dupcap-diff-modal table.diff th,
+.dupcap-diff-modal-body table.diff th {
+	background: #f0f0f1;
+	padding: 6px 10px;
+	text-align: left;
+	font-weight: 600;
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+	font-size: 12px;
+	border-bottom: 1px solid #c3c4c7;
+}
+
+.dupcap-diff-modal table.diff td,
+.dupcap-diff-modal-body table.diff td {
+	/* The start padding is where the +/- icon sits, so it never covers the first letter. */
+	padding: 4px 8px;
+	padding-inline-start: 2em;
+	vertical-align: top;
+	white-space: pre-wrap;
+	word-break: break-word;
+	line-height: 1.4;
+}
+
+.dupcap-diff-modal table.diff .diff-deletedline,
+.dupcap-diff-modal table.diff .diff-addedline,
+.dupcap-diff-modal-body table.diff .diff-deletedline,
+.dupcap-diff-modal-body table.diff .diff-addedline {
+	position: relative;
+}
+
+.dupcap-diff-modal table.diff .dashicons,
+.dupcap-diff-modal-body table.diff .dashicons {
+	position: absolute;
+	top: 0.45em;
+	inset-inline-start: 0.5em;
+	width: 1em;
+	height: 1em;
+	font-size: 1em;
+	line-height: 1;
+}
+
+.dupcap-diff-modal table.diff del,
+.dupcap-diff-modal-body table.diff del {
+	background: #fbcaca;
+	color: #721c24;
+	text-decoration: line-through;
+}
+
+.dupcap-diff-modal table.diff ins,
+.dupcap-diff-modal-body table.diff ins {
+	background: #d4edda;
+	color: #155724;
+	text-decoration: none;
+}
+
+.dupcap-diff-elementor-preview {
+	background: #f6f7f7;
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+	padding: 8px 12px;
+	font-size: 13px;
+}
+
+.dupcap-diff-elementor-preview code {
+	background: #e8eaec;
+	padding: 2px 5px;
+	border-radius: 3px;
+	font-family: Consolas, monospace;
+}

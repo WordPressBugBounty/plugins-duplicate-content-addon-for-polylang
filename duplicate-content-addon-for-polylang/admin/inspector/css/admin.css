@@ -130,6 +130,11 @@
 	line-height: 1;
 	margin: 0;
 	width: 16px;
+	color: inherit;
+}
+
+.dupcap-topbar-btn-docs .dashicons {
+	color: #ffffff !important;
 }
 
 .dupcap-topbar-btn-support {
@@ -387,6 +392,11 @@ a[data-dupcap-track-fix].dupcap-fix-link-resolved {
 .dupcap-topbar-btn .dashicons {
 	flex: 0 0 auto;
 	line-height: 1;
+}
+
+.dupcap-wrap .button-primary .dashicons,
+.dupcap-wrap .button.button-primary .dashicons {
+	color: #ffffff !important;
 }
 
 .dupcap-wrap h1,
@@ -965,12 +975,18 @@ a[data-dupcap-track-fix].dupcap-fix-link-resolved {
 	margin: 0;
 	font-size: 17px;
 	line-height: 1;
+	color: #ffffff !important;
 }
 
 .dupcap-nolang-header-notice-btn:hover,
 .dupcap-nolang-header-notice-btn:focus {
 	background-color: #1d4ed8 !important;
 	border-color: #1d4ed8 !important;
+	color: #ffffff !important;
+}
+
+.dupcap-nolang-header-notice-btn:hover .dashicons,
+.dupcap-nolang-header-notice-btn:focus .dashicons {
 	color: #ffffff !important;
 }
 
@@ -1414,6 +1430,12 @@ a[data-dupcap-track-fix].dupcap-fix-link-resolved {
 	font-size: 16px;
 	line-height: 1;
 	margin: 0;
+	color: #ffffff !important;
+}
+
+.dupcap-wrap .dupcap-environment-plugin-btn:hover .dashicons,
+.dupcap-wrap .dupcap-environment-plugin-btn:focus .dashicons {
+	color: #ffffff !important;
 }
 
 .dupcap-environment-plugin-btn.is-busy {
@@ -2969,11 +2991,12 @@ a.dupcap-content-lang-chip-link:focus {
 .dupcap-detail-row-actions .dupcap-rescan-issue-button .dashicons,
 .dupcap-detail-row-actions .dupcap-ignore-button .dashicons,
 .dupcap-content-actions .dupcap-rescan-issue-button .dashicons,
+.dupcap-view-diff-btn .dashicons-visibility,
 .dupcap-content-actions .dupcap-ignore-button .dashicons {
 	width: 14px;
 	height: 14px;
 	font-size: 14px !important;
-	line-height: 1;
+	line-height: 1 !important;
 }
 
 /* Step instructions & Copy URL button */
