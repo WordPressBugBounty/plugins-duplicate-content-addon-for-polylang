@@ -53,23 +53,47 @@ trait DUPCAP_Dashboard_Ajax_Trait {
 
 			$this->verify_ajax_nonce();
 
-			$refusal = $this->scan_refusal_message();
-			if ( '' !== $refusal ) {
-				wp_send_json_error( array( 'message' => $refusal ), 400 );
-			}
-
-			if ( ! class_exists( 'DUPCAP_Routing_Scanner' ) || ! DUPCAP_Routing_Scanner::is_available() ) {
-				wp_send_json_error(
-					array( 'message' => __( 'URLs cannot be tested because Polylang is not available.', 'duplicate-content-addon-for-polylang' ) ),
-					400
-				);
-			}
-
 			// Nonce verified above.
 			// phpcs:disable WordPress.Security.NonceVerification.Missing
 			$force = isset( $_POST['force'] ) && '1' === sanitize_text_field( wp_unslash( $_POST['force'] ) );
 			// phpcs:enable
-			$outcome = DUPCAP_Routing_Scanner::run( $force );
+			$outcome = $this->run_url_test( $force );
+
+			if ( is_wp_error( $outcome ) ) {
+				$this->send_wp_error( $outcome );
+			}
+
+			$this->send_dashboard_fragments(
+				array(
+					'routing_ran'     => ! empty( $outcome['ran'] ),
+					'routing_message' => isset( $outcome['message'] ) ? (string) $outcome['message'] : '',
+				)
+			);
+		}
+
+		/**
+		 * Test the language URLs over HTTP and merge the result into the report.
+		 *
+		 * Shared by the AJAX handler and the Inspector abilities.
+		 *
+		 * @param bool $force Run even when a recent result is still fresh.
+		 * @return array<string, mixed>|WP_Error DUPCAP_Routing_Scanner::run() outcome.
+		 */
+		public function run_url_test( $force = false ) {
+			$refusal = $this->scan_refusal_message();
+			if ( '' !== $refusal ) {
+				return new WP_Error( 'dupcap_scan_refused', $refusal, array( 'status' => 400 ) );
+			}
+
+			if ( ! class_exists( 'DUPCAP_Routing_Scanner' ) || ! DUPCAP_Routing_Scanner::is_available() ) {
+				return new WP_Error(
+					'dupcap_urls_unavailable',
+					__( 'URLs cannot be tested because Polylang is not available.', 'duplicate-content-addon-for-polylang' ),
+					array( 'status' => 400 )
+				);
+			}
+
+			$outcome = DUPCAP_Routing_Scanner::run( (bool) $force );
 
 			if ( ! empty( $outcome['report'] ) && is_array( $outcome['report'] ) ) {
 				DUPCAP_Routing_Scanner::merge_into_main_report( $outcome['report'] );
@@ -81,11 +105,21 @@ trait DUPCAP_Dashboard_Ajax_Trait {
 				DUPCAP_Permalink_Diagnostics::merge_http_into_main_report();
 			}
 
-			$this->send_dashboard_fragments(
-				array(
-					'routing_ran'     => ! empty( $outcome['ran'] ),
-					'routing_message' => isset( $outcome['message'] ) ? (string) $outcome['message'] : '',
-				)
+			return is_array( $outcome ) ? $outcome : array();
+		}
+
+		/**
+		 * Send a WP_Error as the AJAX error response. Never returns.
+		 *
+		 * @param WP_Error $error Error; its data may carry an HTTP status.
+		 * @return void
+		 */
+		private function send_wp_error( WP_Error $error ) {
+			$data = $error->get_error_data();
+
+			wp_send_json_error(
+				array( 'message' => $error->get_error_message() ),
+				( is_array( $data ) && ! empty( $data['status'] ) ) ? (int) $data['status'] : 400
 			);
 		}
 
@@ -108,28 +142,50 @@ trait DUPCAP_Dashboard_Ajax_Trait {
 
 			$this->verify_ajax_nonce();
 
-			$refusal = $this->scan_refusal_message();
-			if ( '' !== $refusal ) {
-				wp_send_json_error( array( 'message' => $refusal ), 400 );
-			}
-
 			// Nonce verified above.
 			// phpcs:disable WordPress.Security.NonceVerification.Missing
 			$key = isset( $_POST['section'] ) ? sanitize_key( wp_unslash( $_POST['section'] ) ) : '';
 			// phpcs:enable
+
+			$outcome = $this->run_section_scan( $key );
+
+			if ( is_wp_error( $outcome ) ) {
+				$this->send_wp_error( $outcome );
+			}
+
+			$this->send_dashboard_fragments( $outcome );
+		}
+
+		/**
+		 * Re-scan one dashboard section and swap its rows in the saved report.
+		 *
+		 * Shared by the AJAX handler and the Inspector abilities.
+		 *
+		 * @param string $key content|elementor|site.
+		 * @return array{section: string, message: string}|WP_Error
+		 */
+		public function run_section_scan( $key ) {
+			$key     = sanitize_key( (string) $key );
+			$refusal = $this->scan_refusal_message();
+			if ( '' !== $refusal ) {
+				return new WP_Error( 'dupcap_scan_refused', $refusal, array( 'status' => 400 ) );
+			}
+
 			$configs = $this->get_section_scan_config();
 
 			if ( ! isset( $configs[ $key ] ) ) {
-				wp_send_json_error(
-					array( 'message' => __( 'This section cannot be scanned on its own.', 'duplicate-content-addon-for-polylang' ) ),
-					400
+				return new WP_Error(
+					'dupcap_section_unknown',
+					__( 'This section cannot be scanned on its own.', 'duplicate-content-addon-for-polylang' ),
+					array( 'status' => 400 )
 				);
 			}
 
 			if ( ! DUPCAP_Scanner::has_saved_scan() ) {
-				wp_send_json_error(
-					array( 'message' => __( 'Run Scan Website once first. Section scans update an existing report.', 'duplicate-content-addon-for-polylang' ) ),
-					400
+				return new WP_Error(
+					'dupcap_no_saved_scan',
+					__( 'Run Scan Website once first. Section scans update an existing report.', 'duplicate-content-addon-for-polylang' ),
+					array( 'status' => 400 )
 				);
 			}
 
@@ -153,25 +209,25 @@ trait DUPCAP_Dashboard_Ajax_Trait {
 					// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Error logging is allowed.
 					error_log( 'DUPCAP section scan "' . $key . '" failed: ' . $e->getMessage() . ' at ' . $e->getFile() . ':' . $e->getLine() );
 				}
-				wp_send_json_error(
-					array( 'message' => __( 'The scan could not finish. Please try again, or run Scan Website.', 'duplicate-content-addon-for-polylang' ) ),
-					500
+				return new WP_Error(
+					'dupcap_scan_failed',
+					__( 'The scan could not finish. Please try again, or run Scan Website.', 'duplicate-content-addon-for-polylang' ),
+					array( 'status' => 500 )
 				);
 			}
 
 			$rows = isset( $fresh['results'] ) && is_array( $fresh['results'] ) ? $fresh['results'] : array();
 			if ( ! $this->save_section_results( $key, $config['section'], $rows ) ) {
-				wp_send_json_error(
-					array( 'message' => __( 'The scan finished, but the saved report could not be updated. Please run Scan Website.', 'duplicate-content-addon-for-polylang' ) ),
-					500
+				return new WP_Error(
+					'dupcap_report_not_saved',
+					__( 'The scan finished, but the saved report could not be updated. Please run Scan Website.', 'duplicate-content-addon-for-polylang' ),
+					array( 'status' => 500 )
 				);
 			}
 
-			$this->send_dashboard_fragments(
-				array(
-					'section' => $key,
-					'message' => $config['done'],
-				)
+			return array(
+				'section' => $key,
+				'message' => $config['done'],
 			);
 		}
 
@@ -350,19 +406,40 @@ trait DUPCAP_Dashboard_Ajax_Trait {
 
 			$this->verify_ajax_nonce();
 
+			$result = $this->assign_default_language();
+
+			if ( is_wp_error( $result ) ) {
+				$this->send_wp_error( $result );
+			}
+
+			$this->send_dashboard_fragments();
+		}
+
+		/**
+		 * Give the default language to every post, page and term that has none,
+		 * then refresh the Content and Elementor sections of the saved report.
+		 *
+		 * Shared by the AJAX handler and the Inspector abilities.
+		 *
+		 * @param string[] $types Polylang object types (post, term); empty for all.
+		 * @return true|WP_Error
+		 */
+		public function assign_default_language( array $types = array() ) {
 			$default_lang = function_exists( 'pll_default_language' ) ? pll_default_language() : '';
 			if ( empty( $default_lang ) ) {
-				wp_send_json_error(
-					array( 'message' => __( 'No default language is configured in Polylang. Please set a default language first.', 'duplicate-content-addon-for-polylang' ) ),
-					400
+				return new WP_Error(
+					'dupcap_no_default_language',
+					__( 'No default language is configured in Polylang. Please set a default language first.', 'duplicate-content-addon-for-polylang' ),
+					array( 'status' => 400 )
 				);
 			}
 
 			$model = $this->get_polylang_model();
 			if ( ! $model || ! method_exists( $model, 'set_language_in_mass' ) ) {
-				wp_send_json_error(
-					array( 'message' => __( 'Polylang is not available.', 'duplicate-content-addon-for-polylang' ) ),
-					400
+				return new WP_Error(
+					'dupcap_polylang_unavailable',
+					__( 'Polylang is not available.', 'duplicate-content-addon-for-polylang' ),
+					array( 'status' => 400 )
 				);
 			}
 
@@ -371,7 +448,31 @@ trait DUPCAP_Dashboard_Ajax_Trait {
 				@set_time_limit( 300 );
 			}
 
-			$model->set_language_in_mass();
+			if ( empty( $types ) ) {
+				$model->set_language_in_mass();
+			} else {
+				// The $types argument arrived in Polylang 3.4.
+				$model->set_language_in_mass( null, array_values( array_map( 'strval', $types ) ) );
+			}
+
+			$this->refresh_after_language_change();
+
+			return true;
+		}
+
+		/**
+		 * Re-run the Content and Elementor checks and swap their rows in the
+		 * saved report, after languages were assigned.
+		 *
+		 * Static site setup checks are skipped so this stays quick.
+		 *
+		 * @return void
+		 */
+		public function refresh_after_language_change() {
+			if ( function_exists( 'set_time_limit' ) ) {
+				// phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged -- Set time limit is allowed.
+				@set_time_limit( 300 );
+			}
 
 			// Rescan only Content and Elementor checks (skipping static site setup checks)
 			// to update dashboard results quickly after assigning default languages.
@@ -412,8 +513,6 @@ trait DUPCAP_Dashboard_Ajax_Trait {
 			} else {
 				DUPCAP_Scanner::save_report( $fresh );
 			}
-
-			$this->send_dashboard_fragments();
 		}
 
 		/**

@@ -57,4 +57,14 @@ class DUPCAP_Issue_Copy {
 	public static function elementor_message( $key ) {
 		return DUPCAP_Issue_Registry::elementor_field( $key, 'message' );
 	}
+
+	/**
+	 * Plain-language how-to for an Elementor insight bucket (export).
+	 *
+	 * @param string $key Bucket key.
+	 * @return string Empty when unknown.
+	 */
+	public static function elementor_howto( $key ) {
+		return DUPCAP_Issue_Registry::elementor_field( $key, 'howto' );
+	}
 }

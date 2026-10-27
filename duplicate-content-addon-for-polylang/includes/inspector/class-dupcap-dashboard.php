@@ -12,6 +12,7 @@ defined( 'ABSPATH' ) || exit;
  */
 final class DUPCAP_Dashboard {
 
+	use DUPCAP_Dashboard_Export_Trait;
 	use DUPCAP_Dashboard_Copy_Trait;
 	use DUPCAP_Dashboard_Health_Trait;
 	use DUPCAP_Dashboard_Environment_Trait;

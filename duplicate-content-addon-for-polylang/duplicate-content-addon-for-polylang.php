@@ -2,7 +2,7 @@
 /*
 Plugin Name: Toolkit for Polylang - Translation Inspector & Duplicate Content
 Plugin URI: https://wordpress.org/plugins/duplicate-content-addon-for-polylang/
-Version: 2.2.0
+Version: 2.3.0
 Author: Khushwant Singh
 Author URI: https://profiles.wordpress.org/khushwantsidhu/
 Description: Duplicate Polylang content across languages and scan your site with Translation Inspector for missing or broken translations.
@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 if ( ! defined( 'DUPCAP_VERSION' ) ) {
-	define( 'DUPCAP_VERSION', '2.2.0' );
+	define( 'DUPCAP_VERSION', '2.3.0' );
 }
 
 /**
@@ -379,6 +379,7 @@ if ( ! class_exists( 'duplicateContentAddon' ) ) {
 				require_once DUPCAP_INSPECTOR_DIR . 'issues/class-dupcap-issue-normalizer.php';
 				require_once DUPCAP_INSPECTOR_DIR . 'class-dupcap-issue-copy.php';
 				require_once DUPCAP_INSPECTOR_DIR . 'class-dupcap-scanner.php';
+				require_once DUPCAP_INSPECTOR_DIR . 'class-dupcap-dashboard-export.php';
 				require_once DUPCAP_INSPECTOR_DIR . 'dashboard/trait-dupcap-dashboard-copy.php';
 				require_once DUPCAP_INSPECTOR_DIR . 'dashboard/trait-dupcap-dashboard-health.php';
 				require_once DUPCAP_INSPECTOR_DIR . 'dashboard/trait-dupcap-dashboard-environment.php';

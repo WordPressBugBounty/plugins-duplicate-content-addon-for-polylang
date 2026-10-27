@@ -26,25 +26,64 @@ trait DUPCAP_Dashboard_Rescan_Issue_Trait {
 			$template_id   = isset( $_POST['template_id'] ) ? (int) $_POST['template_id'] : 0;
 			$template_type = isset( $_POST['template_type'] ) ? sanitize_key( wp_unslash( $_POST['template_type'] ) ) : '';
 			$ignore_key    = isset( $_POST['ignore_key'] ) ? DUPCAP_Ignored_Issues::sanitize_key( sanitize_text_field( wp_unslash( $_POST['ignore_key'] ) ) ) : '';
-			if ( $template_id <= 0 && ( 'elementor_not_translated' === $template_type || 'elementor_library' === $template_type ) ) {
-				$_POST['template_type'] = 'elementor_not_translated';
-				$this->handle_rescan_elementor_library_issue();
-				// phpcs:enable
-				return;
-			}
+			$language      = isset( $_POST['language'] ) ? sanitize_key( wp_unslash( $_POST['language'] ) ) : '';
 			// phpcs:enable
 
+			$outcome = $this->recheck_elementor_issue( $template_id, $template_type, $ignore_key, $language );
+
+			if ( is_wp_error( $outcome ) ) {
+				$this->send_wp_error( $outcome );
+			}
+
+			// A library gap that is still present leaves the dashboard as it is.
+			$is_library = ! empty( $outcome['library'] );
+			unset( $outcome['library'] );
+
+			if ( $is_library && empty( $outcome['resolved'] ) ) {
+				wp_send_json_success( $outcome );
+			}
+
+			$this->send_dashboard_fragments( $outcome );
+		}
+
+		/**
+		 * Re-check one Elementor issue and update the saved Elementor report.
+		 *
+		 * A library-wide gap (no template ID) is routed to
+		 * recheck_elementor_library_issue(); the result then carries library: true.
+		 *
+		 * @param int    $template_id   Elementor document ID.
+		 * @param string $template_type Template type from the issue row.
+		 * @param string $ignore_key    Ignore key of the finding.
+		 * @param string $language      Target language slug, used for library-wide gaps.
+		 * @return array{resolved: bool, message: string, library?: bool}|WP_Error
+		 */
+		public function recheck_elementor_issue( $template_id, $template_type = '', $ignore_key = '', $language = '' ) {
+			$template_id   = (int) $template_id;
+			$template_type = sanitize_key( (string) $template_type );
+			$ignore_key    = DUPCAP_Ignored_Issues::sanitize_key( (string) $ignore_key );
+
+			if ( $template_id <= 0 && ( 'elementor_not_translated' === $template_type || 'elementor_library' === $template_type ) ) {
+				$outcome = $this->recheck_elementor_library_issue( 'elementor_not_translated', $language );
+				if ( is_array( $outcome ) ) {
+					$outcome['library'] = true;
+				}
+				return $outcome;
+			}
+
 			if ( $template_id <= 0 || '' === $ignore_key ) {
-				wp_send_json_error(
-					array( 'message' => __( 'This issue could not be identified.', 'duplicate-content-addon-for-polylang' ) ),
-					400
+				return new WP_Error(
+					'dupcap_issue_unidentified',
+					__( 'This issue could not be identified.', 'duplicate-content-addon-for-polylang' ),
+					array( 'status' => 400 )
 				);
 			}
 
 			if ( ! class_exists( 'DUPCAP_Elementor_Scanner' ) || ! DUPCAP_Elementor_Scanner::is_elementor_available() ) {
-				wp_send_json_error(
-					array( 'message' => __( 'Elementor is not available.', 'duplicate-content-addon-for-polylang' ) ),
-					400
+				return new WP_Error(
+					'dupcap_elementor_unavailable',
+					__( 'Elementor is not available.', 'duplicate-content-addon-for-polylang' ),
+					array( 'status' => 400 )
 				);
 			}
 
@@ -71,9 +110,10 @@ trait DUPCAP_Dashboard_Rescan_Issue_Trait {
 					// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Error logging is allowed.
 					error_log( 'DUPCAP rescan_issue failed for template ' . $template_id . ': ' . $e->getMessage() . ' at ' . $e->getFile() . ':' . $e->getLine() );
 				}
-				wp_send_json_error(
-					array( 'message' => __( 'The rescan could not finish for this document. Please try a full site scan instead.', 'duplicate-content-addon-for-polylang' ) ),
-					500
+				return new WP_Error(
+					'dupcap_rescan_failed',
+					__( 'The rescan could not finish for this document. Please try a full site scan instead.', 'duplicate-content-addon-for-polylang' ),
+					array( 'status' => 500 )
 				);
 			}
 
@@ -131,13 +171,21 @@ trait DUPCAP_Dashboard_Rescan_Issue_Trait {
 				DUPCAP_Elementor_Scanner::save_report( $saved_report );
 			}
 
-			$this->send_dashboard_fragments(
-				array(
-					'resolved' => ! $still_present,
-					'message'  => $still_present
-						? __( 'This issue is still present.', 'duplicate-content-addon-for-polylang' )
-						: __( 'This issue is now resolved.', 'duplicate-content-addon-for-polylang' ),
-				)
+			return self::recheck_outcome( ! $still_present );
+		}
+
+		/**
+		 * Result of a single-issue recheck.
+		 *
+		 * @param bool $resolved Whether the issue is gone.
+		 * @return array{resolved: bool, message: string}
+		 */
+		private static function recheck_outcome( $resolved ) {
+			return array(
+				'resolved' => (bool) $resolved,
+				'message'  => $resolved
+					? __( 'This issue is now resolved.', 'duplicate-content-addon-for-polylang' )
+					: __( 'This issue is still present.', 'duplicate-content-addon-for-polylang' ),
 			);
 		}
 
@@ -158,22 +206,57 @@ trait DUPCAP_Dashboard_Rescan_Issue_Trait {
 
 			// Nonce verified above.
 			// phpcs:disable WordPress.Security.NonceVerification.Missing
-			$kind           = isset( $_POST['kind'] ) ? sanitize_key( wp_unslash( $_POST['kind'] ) ) : 'content';
-			$post_id        = isset( $_POST['post_id'] ) ? (int) $_POST['post_id'] : 0;
-			$translation_id = isset( $_POST['translation_id'] ) ? (int) $_POST['translation_id'] : 0;
-			$language       = isset( $_POST['language'] ) ? sanitize_key( wp_unslash( $_POST['language'] ) ) : '';
-			$gap_type       = isset( $_POST['gap_type'] ) ? sanitize_key( wp_unslash( $_POST['gap_type'] ) ) : 'missing';
-			$field          = isset( $_POST['field'] ) ? sanitize_key( wp_unslash( $_POST['field'] ) ) : '';
-			$ignore_key     = isset( $_POST['ignore_key'] ) ? DUPCAP_Ignored_Issues::sanitize_key( sanitize_text_field( wp_unslash( $_POST['ignore_key'] ) ) ) : '';
-			$url            = isset( $_POST['url'] ) ? esc_url_raw( wp_unslash( $_POST['url'] ) ) : '';
+			$outcome = $this->recheck_content_issue(
+				array(
+					'kind'           => isset( $_POST['kind'] ) ? sanitize_key( wp_unslash( $_POST['kind'] ) ) : 'content',
+					'post_id'        => isset( $_POST['post_id'] ) ? (int) $_POST['post_id'] : 0,
+					'translation_id' => isset( $_POST['translation_id'] ) ? (int) $_POST['translation_id'] : 0,
+					'language'       => isset( $_POST['language'] ) ? sanitize_key( wp_unslash( $_POST['language'] ) ) : '',
+					'gap_type'       => isset( $_POST['gap_type'] ) ? sanitize_key( wp_unslash( $_POST['gap_type'] ) ) : 'missing',
+					'field'          => isset( $_POST['field'] ) ? sanitize_key( wp_unslash( $_POST['field'] ) ) : '',
+					'ignore_key'     => isset( $_POST['ignore_key'] ) ? sanitize_text_field( wp_unslash( $_POST['ignore_key'] ) ) : '',
+					'url'            => isset( $_POST['url'] ) ? esc_url_raw( wp_unslash( $_POST['url'] ) ) : '',
+				)
+			);
 			// phpcs:enable
+
+			$this->send_recheck_response( $outcome );
+		}
+
+		/**
+		 * Re-check one content, menu or homepage issue and update the saved report.
+		 *
+		 * @param array<string, mixed> $args {
+		 *     @type string $kind           content|homepage|identical|link|menu_dead.
+		 *     @type int    $post_id        Source post (content gaps).
+		 *     @type int    $translation_id Translation hint (identical / link rows).
+		 *     @type string $language       Target language slug (content and homepage gaps).
+		 *     @type string $gap_type       missing|draft|source_updated (content), missing|empty_layout (homepage).
+		 *     @type string $field          Field hint (identical rows).
+		 *     @type string $ignore_key     Row ignore key (identical, link, menu_dead).
+		 *     @type string $url            Dead link URL (menu_dead).
+		 * }
+		 * @return array{resolved: bool, message: string}|WP_Error
+		 */
+		public function recheck_content_issue( array $args ) {
+			$kind           = isset( $args['kind'] ) ? sanitize_key( (string) $args['kind'] ) : 'content';
+			$post_id        = isset( $args['post_id'] ) ? (int) $args['post_id'] : 0;
+			$translation_id = isset( $args['translation_id'] ) ? (int) $args['translation_id'] : 0;
+			$language       = isset( $args['language'] ) ? sanitize_key( (string) $args['language'] ) : '';
+			$gap_type       = ! empty( $args['gap_type'] ) ? sanitize_key( (string) $args['gap_type'] ) : 'missing';
+			$field          = isset( $args['field'] ) ? sanitize_key( (string) $args['field'] ) : '';
+			$ignore_key     = isset( $args['ignore_key'] ) ? DUPCAP_Ignored_Issues::sanitize_key( (string) $args['ignore_key'] ) : '';
+			$url            = isset( $args['url'] ) ? esc_url_raw( (string) $args['url'] ) : '';
+
+			$unidentified = new WP_Error(
+				'dupcap_issue_unidentified',
+				__( 'This issue could not be identified.', 'duplicate-content-addon-for-polylang' ),
+				array( 'status' => 400 )
+			);
 
 			if ( in_array( $kind, array( 'identical', 'link', 'menu_dead' ), true ) ) {
 				if ( '' === $ignore_key ) {
-					wp_send_json_error(
-						array( 'message' => __( 'This issue could not be identified.', 'duplicate-content-addon-for-polylang' ) ),
-						400
-					);
+					return $unidentified;
 				}
 
 				if ( 'menu_dead' === $kind ) {
@@ -201,28 +284,11 @@ trait DUPCAP_Dashboard_Rescan_Issue_Trait {
 					$still_present = ! $any_fixed;
 				}
 
-				if ( $still_present ) {
-					wp_send_json_success(
-						array(
-							'resolved' => false,
-							'message'  => __( 'This issue is still present.', 'duplicate-content-addon-for-polylang' ),
-						)
-					);
-				}
-
-				$this->send_dashboard_fragments(
-					array(
-						'resolved' => true,
-						'message'  => __( 'This issue is now resolved.', 'duplicate-content-addon-for-polylang' ),
-					)
-				);
+				return self::recheck_outcome( ! $still_present );
 			}
 
 			if ( '' === $language || ! in_array( $kind, array( 'content', 'homepage' ), true ) ) {
-				wp_send_json_error(
-					array( 'message' => __( 'This issue could not be identified.', 'duplicate-content-addon-for-polylang' ) ),
-					400
-				);
+				return $unidentified;
 			}
 
 			if ( 'homepage' === $kind ) {
@@ -232,10 +298,7 @@ trait DUPCAP_Dashboard_Rescan_Issue_Trait {
 				}
 			} else {
 				if ( $post_id <= 0 ) {
-					wp_send_json_error(
-						array( 'message' => __( 'This issue could not be identified.', 'duplicate-content-addon-for-polylang' ) ),
-						400
-					);
+					return $unidentified;
 				}
 				if ( 'source_updated' === $gap_type ) {
 					$still_present = $this->source_updated_detail_still_present( $post_id, $language );
@@ -252,28 +315,36 @@ trait DUPCAP_Dashboard_Rescan_Issue_Trait {
 				}
 			}
 
-			if ( $still_present ) {
-				wp_send_json_success(
-					array(
-						'resolved' => false,
-						'message'  => __( 'This issue is still present.', 'duplicate-content-addon-for-polylang' ),
-					)
-				);
+			return self::recheck_outcome( ! $still_present );
+		}
+
+		/**
+		 * AJAX answer for a content or library recheck. Never returns.
+		 *
+		 * A resolved issue re-renders the dashboard; one still present leaves it
+		 * as it is.
+		 *
+		 * @param array<string, mixed>|WP_Error $outcome Recheck result.
+		 * @return void
+		 */
+		private function send_recheck_response( $outcome ) {
+			if ( is_wp_error( $outcome ) ) {
+				$this->send_wp_error( $outcome );
 			}
 
-			$this->send_dashboard_fragments(
-				array(
-					'resolved' => true,
-					'message'  => __( 'This issue is now resolved.', 'duplicate-content-addon-for-polylang' ),
-				)
-			);
+			if ( empty( $outcome['resolved'] ) ) {
+				wp_send_json_success( $outcome );
+			}
+
+			$this->send_dashboard_fragments( $outcome );
 		}
 
 		/**
 		 * Rescan one Elementor library type+language translation gap.
 		 *
 		 * @return void
-		 */		public function handle_rescan_elementor_library_issue() {
+		 */
+		public function handle_rescan_elementor_library_issue() {
 			if ( ! current_user_can( 'manage_options' ) ) {
 				wp_send_json_error(
 					array( 'message' => __( 'You do not have permission to run this scan.', 'duplicate-content-addon-for-polylang' ) ),
@@ -289,10 +360,25 @@ trait DUPCAP_Dashboard_Rescan_Issue_Trait {
 			$language      = isset( $_POST['language'] ) ? sanitize_key( wp_unslash( $_POST['language'] ) ) : '';
 			// phpcs:enable
 
+			$this->send_recheck_response( $this->recheck_elementor_library_issue( $template_type, $language ) );
+		}
+
+		/**
+		 * Re-check one Elementor library type + language translation gap.
+		 *
+		 * @param string $template_type Elementor template type, or elementor_not_translated.
+		 * @param string $language      Target language slug.
+		 * @return array{resolved: bool, message: string}|WP_Error
+		 */
+		public function recheck_elementor_library_issue( $template_type, $language = '' ) {
+			$template_type = sanitize_key( (string) $template_type );
+			$language      = sanitize_key( (string) $language );
+
 			if ( '' === $template_type ) {
-				wp_send_json_error(
-					array( 'message' => __( 'This issue could not be identified.', 'duplicate-content-addon-for-polylang' ) ),
-					400
+				return new WP_Error(
+					'dupcap_issue_unidentified',
+					__( 'This issue could not be identified.', 'duplicate-content-addon-for-polylang' ),
+					array( 'status' => 400 )
 				);
 			}
 
@@ -302,21 +388,7 @@ trait DUPCAP_Dashboard_Rescan_Issue_Trait {
 				$this->refresh_untranslated_types_in_saved_report();
 			}
 
-			if ( $still_present ) {
-				wp_send_json_success(
-					array(
-						'resolved' => false,
-						'message'  => __( 'This issue is still present.', 'duplicate-content-addon-for-polylang' ),
-					)
-				);
-			}
-
-			$this->send_dashboard_fragments(
-				array(
-					'resolved' => true,
-					'message'  => __( 'This issue is now resolved.', 'duplicate-content-addon-for-polylang' ),
-				)
-			);
+			return self::recheck_outcome( ! $still_present );
 		}
 
 		/**

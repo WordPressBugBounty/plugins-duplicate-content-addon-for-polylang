@@ -4,7 +4,7 @@ Tags: Polylang, multilingual, translation, translation issues, Elementor
 Requires at least: 5.0
 Tested up to: 7.1
 Requires PHP: 7.2
-Stable tag: 2.2.0
+Stable tag: 2.3.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -16,7 +16,7 @@ https://youtu.be/NEoQRqDCcSM?si=s7UsEJIvgcpJHBCM
 
 **Toolkit for Polylang - Translation Inspector & Duplicate Content** is a powerful WordPress plugin that helps you scan your multilingual website and find translation issues.
 
-As a multilingual website owner you must already know that even when the main content is translated, problems like  **link to the wrong language**, **404 error**, **wrong Elementor template display**, **untranslated URLs** and more still goes unnoticed.
+As a multilingual website owner you must already know that even when the main content is translated, problems like  **link to the wrong language**, **404 error**, **wrong Elementor template display**, **ACF translation issues**, **untranslated URLs** and more still goes unnoticed.
 
 Toolkit for Polylang brings these checks together in one place. Just run a **scan**, **review the findings**, and understand **what need attention**.
 
@@ -26,7 +26,7 @@ Toolkit for Polylang brings these checks together in one place. Just run a **sca
 
 * **Issue Severity & Status**: Organizes scan results into Critical, Warning, Passed, and Ignored categories, making it easier to understand which issues need attention and which checks have passed.
 
-* **Missing Translation Detection**: Find supported posts, pages, and other content that are missing translations in one or more active Polylang languages. 
+* **Missing Translation Detection**: Find supported posts, pages, and other content that are missing translations in one or more active Polylang languages.
 
 * **URL & Routing Checks**: Review multilingual URLs and language routing for supported problems, including incorrect language URLs, broken links, and routes that results in 404 pages.
 
@@ -37,6 +37,12 @@ Toolkit for Polylang brings these checks together in one place. Just run a **sca
 * **Translation Coverage**: Review translation availability across your active Polylang languages and identify content that does or does not have corresponding language versions.
 
 * **Issue Rescanning**: Rescan individual issues or completed website after making changes to check whether they have been resolved.
+
+* **ACF Compatibility**: Scan supported Advanced Custom Fields (ACF) content to detect missing translations and other translation-related issues across your multilingual website.
+
+* **Translation Status**: Check the translation status directly inside the WordPress page editor. See whether a translated page is up to date or outdated, along with details to help you identify which translations need attention.
+
+* **Untranslated Inspector**: Inspect individual pages to find untranslated content and see which content details still need translation, without manually checking every field or section.
 
 * **Duplicate Content**: Duplicate your pages/posts and make them available for translation via Polylang.
 
@@ -76,7 +82,7 @@ Toolkit for Polylang works as part of a broader Polylang workflow. You can optio
 == Screenshots ==
 1. Multilingual Website Issue Scan
 2. Configure Multilingual Issues
-3. Automatic Translation.
+3. Frontend Untranslated Inspector
 
 == Installation ==
 * First, make sure that you have installed and activated the **Toolkit for Polylang - Translation Inspector & Duplicate Content** plugin on your WordPress website.
@@ -130,6 +136,13 @@ Yes. If an issue is intentional or does not need action on your website, you can
 = Can I check an issue again after fixing it? =
 Yes. Using **Rescan Issue** option you can run another complete website scan.
 
+= Does Toolkit for Polylang support ACF translation checks? =
+Yes. Toolkit for Polylang can scan supported Advanced Custom Fields (ACF) content to identify missing translations and other translation-related issues across your active languages.
+
+= How can I check whether my page translation is outdated? =
+Toolkit for Polylang displays translation status information inside the WordPress page editor. You can see whether a translation is up to date or outdated and review the available details to understand which translations may need updating.
+
+
 = What does Duplicate Content do? =
 It duplicate your pages/posts and make them available for translation via Polylang.
 
@@ -140,6 +153,9 @@ No. AI Translation and Language Switcher plugins are optional. If these are inst
 The scan is intended to inspect your multilingual website and report issues.
 Changes are made only when you intentionally use an available action, such as editing content or changing a setting.
 
+= Does Toolkit for Polylang automatically fix untranslated content? =
+No. Toolkit for Polylang helps you identify untranslated or outdated content. You can then review and update the translations manually or use a supported translation addon such as AutoPoly.
+
 = Is this plugin developed by the Polylang team? =
 No. Toolkit for Polylang for Polylang is a third-party addon and is not developed by or affiliated with the official Polylang developers.
 
@@ -148,6 +164,11 @@ No. Toolkit for Polylang for Polylang is a third-party addon and is not develope
 You can report security bugs through the Patchstack Vulnerability Disclosure Program. The Patchstack team help validate, triage and handle any security vulnerabilities. [Report a security vulnerability.]( https://patchstack.com/database/vdp/192d452d-4702-4ef9-a7b1-693738911de8 ).
 
 == Changelog ==
+
+= Version 2.3.0 | 27 Oct 2026 =
+- **Added:** MCP support for AI assistants. Compatible tools, such as AutoPoly AI Translation Pro, can now run a Translation Inspector scan, read the report and the list of issues, re-check a fix, and give the default language to content that has none.
+- **Added:** Scan and report results are now available to AI assistants as structured data (Markdown or JSON), with the same health score and issue counts as the dashboard.
+- **Improved:** The dashboard's scan, re-check and URL test actions now share their code with the AI assistant support, so both always give the same results.
 
 = Version 2.2.0 | 26 Oct 2026 =
 - **Added:** Detection of ACF and custom-field text that remains identical to the original language on translated pages.

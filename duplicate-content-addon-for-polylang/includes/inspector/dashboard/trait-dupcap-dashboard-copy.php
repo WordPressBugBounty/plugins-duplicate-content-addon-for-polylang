@@ -282,6 +282,125 @@ trait DUPCAP_Dashboard_Copy_Trait {
 		}
 
 		/**
+		 * Get report-style fix title.
+		 *
+		 * @param array<string, mixed> $group Group.
+		 * @return string
+		 */
+		private function get_fix_title( array $group ) {
+			$count = $this->get_group_issue_count( $group );
+
+			switch ( $group['dedupe_key'] ) {
+				case 'untranslated_types':
+					return sprintf(
+						/* translators: %d: issue count. */
+						_n( '%d Content Type Not Enabled for Translation', '%d Content Types Not Enabled for Translation', $count, 'duplicate-content-addon-for-polylang' ),
+						$count
+					);
+				case 'homepage_translations':
+					$langs = array();
+					if ( ! empty( $group['affected_languages'] ) && is_array( $group['affected_languages'] ) ) {
+						foreach ( $group['affected_languages'] as $slug ) {
+							$langs[] = class_exists( 'DUPCAP_Elementor_Fields' )
+								? DUPCAP_Elementor_Fields::language_label( (string) $slug )
+								: strtoupper( (string) $slug );
+						}
+					}
+					if ( ! empty( $langs ) ) {
+						return sprintf(
+							/* translators: %s: comma-separated language names */
+							__( 'Homepage Missing in %s', 'duplicate-content-addon-for-polylang' ),
+							implode( ', ', $langs )
+						);
+					}
+					return __( 'Homepage Translation Missing', 'duplicate-content-addon-for-polylang' );
+				case 'elementor_templates':
+					return __( 'Elementor Templates Not Set as Translatable', 'duplicate-content-addon-for-polylang' );
+				case 'menu_assignments':
+					return sprintf(
+						/* translators: %d: issue count. */
+						_n( '%d Navigation Menu Missing Language', '%d Navigation Menus Missing Languages', $count, 'duplicate-content-addon-for-polylang' ),
+						$count
+					);
+				case 'menu_dead_links':
+					return sprintf(
+						/* translators: %d: number of distinct missing/unpublished page targets. */
+						_n( '%d Broken Link in Navigation Menu', '%d Broken Links in Navigation Menus', $count, 'duplicate-content-addon-for-polylang' ),
+						$count
+					);
+				case 'navigation':
+					return sprintf(
+						/* translators: %d: issue count. */
+						_n( '%d Navigation Menu Issue', '%d Navigation Menu Issues', $count, 'duplicate-content-addon-for-polylang' ),
+						$count
+					);
+				case 'lang_switcher':
+					return __( 'No Language Switcher Menu Found', 'duplicate-content-addon-for-polylang' );
+				case 'content_missing':
+					return sprintf(
+						/* translators: %d: issue count. */
+						_n( '%d Page or Post Missing Translation', '%d Pages or Posts Missing Translation', $count, 'duplicate-content-addon-for-polylang' ),
+						$count
+					);
+				case 'content_identical':
+					return sprintf(
+						/* translators: %d: issue count. */
+						_n( '%d Translation Content is Identical', '%d Translation Contents are Identical', $count, 'duplicate-content-addon-for-polylang' ),
+						$count
+					);
+				case 'content_source_updated':
+					return sprintf(
+						/* translators: %d: issue count. */
+						_n( '%d Translation Needs Update After Default Change', '%d Translations Need Update After Default Change', $count, 'duplicate-content-addon-for-polylang' ),
+						$count
+					);
+				case 'content_links':
+					return sprintf(
+						/* translators: %d: issue count. */
+						_n( '%d Link Pointing to Wrong Language', '%d Links Pointing to Wrong Language', $count, 'duplicate-content-addon-for-polylang' ),
+						$count
+					);
+				case 'content_draft':
+					return sprintf(
+						/* translators: %d: issue count. */
+						_n( '%d Translation Draft Not Published', '%d Translation Drafts Not Published', $count, 'duplicate-content-addon-for-polylang' ),
+						$count
+					);
+				case 'term_missing':
+					return sprintf(
+						/* translators: %d: issue count. */
+						_n( '%d Category or Tag Missing Translation', '%d Categories or Tags Missing Translation', $count, 'duplicate-content-addon-for-polylang' ),
+						$count
+					);
+				case 'strings_missing':
+					return __( 'Website Text Strings Not Translated', 'duplicate-content-addon-for-polylang' );
+				case 'routing_health':
+					if ( isset( $group['severity'] ) && 'info' === $group['severity'] ) {
+						return sprintf(
+							/* translators: %d: number of languages needing a browser check. */
+							_n( '%d Language URL Needs Browser Check', '%d Language URLs Need Browser Check', $count, 'duplicate-content-addon-for-polylang' ),
+							$count
+						);
+					}
+					return sprintf(
+						/* translators: %d: number of languages with failing URLs. */
+						_n( '%d Language URL Broken or Not Loading', '%d Language URLs Broken or Not Loading', $count, 'duplicate-content-addon-for-polylang' ),
+						$count
+					);
+				case 'url_configuration':
+					return sprintf(
+						/* translators: %d: issue count. */
+						_n( '%d URL Setting Problem', '%d URL Setting Problems', $count, 'duplicate-content-addon-for-polylang' ),
+						$count
+					);
+				case 'translated_permalinks':
+					return __( 'Translated URL Slugs Notice', 'duplicate-content-addon-for-polylang' );
+			}
+
+			return $group['title'];
+		}
+
+		/**
 		 * Get why-this-matters copy.
 		 *
 		 * @param array<string, mixed> $group Group.
